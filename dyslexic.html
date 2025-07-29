@@ -1,0 +1,1930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏁 Focus Racer - Learn Python While Racing!</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=OpenDyslexic:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'OpenDyslexic', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .game-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header UI */
+        .game-header {
+            height: 80px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 100;
+        }
+
+        .game-title {
+            font-family: 'Fredoka One', cursive;
+            font-size: 2rem;
+            color: #FFD700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .game-stats {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            color: #4CAF50;
+        }
+
+        /* Game Canvas */
+        #gameCanvas {
+            flex: 1;
+            background: linear-gradient(to bottom, #87CEEB 0%, #98FB98 50%, #90EE90 100%);
+            cursor: crosshair;
+        }
+
+        /* Question Modal */
+        .question-modal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 90%;
+            z-index: 200;
+            display: none;
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        .question-title {
+            font-family: 'Fredoka One', cursive;
+            font-size: 1.8rem;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .question-text {
+            font-size: 1.3rem;
+            color: #555;
+            margin-bottom: 25px;
+            line-height: 1.6;
+            text-align: center;
+        }
+
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+
+        .answer-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .answer-btn {
+            padding: 15px 20px;
+            border: 3px solid #ddd;
+            border-radius: 15px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'OpenDyslexic', Arial, sans-serif;
+        }
+
+        .answer-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            border-color: #667eea;
+        }
+
+        .answer-btn.correct {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            border-color: #4CAF50;
+        }
+
+        .answer-btn.incorrect {
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+            color: white;
+            border-color: #f44336;
+        }
+
+        /* Focus Break Modal */
+        .focus-break-modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 300;
+        }
+
+        .focus-break-content {
+            text-align: center;
+            color: white;
+            max-width: 500px;
+        }
+
+        .breathing-circle {
+            width: 200px;
+            height: 200px;
+            border: 4px solid #4CAF50;
+            border-radius: 50%;
+            margin: 30px auto;
+            animation: breathe 4s infinite;
+        }
+
+        @keyframes breathe {
+            0%, 100% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.2); opacity: 1; }
+        }
+
+        @keyframes modalSlideIn {
+            from { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+            to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        /* Keyboard Controls Panel */
+        .controls-panel {
+            position: absolute;
+            top: 100px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid #4CAF50;
+            z-index: 100;
+            min-width: 200px;
+        }
+
+        .controls-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 15px;
+            color: #4CAF50;
+        }
+
+        .controls-instructions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-item {
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .key {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-weight: bold;
+            color: #4CAF50;
+            border: 1px solid rgba(76, 175, 80, 0.3);
+        }
+
+        /* Controls */
+        .game-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 100;
+        }
+
+        .control-btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'OpenDyslexic', Arial, sans-serif;
+        }
+
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        /* Start Screen */
+        .start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 400;
+            color: white;
+            text-align: center;
+        }
+
+        .start-title {
+            font-family: 'Fredoka One', cursive;
+            font-size: 4rem;
+            margin-bottom: 20px;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+            animation: titleBounce 2s infinite;
+        }
+
+        .start-subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+
+        .start-btn {
+            padding: 20px 40px;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #333;
+            border: none;
+            border-radius: 30px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Fredoka One', cursive;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+
+        .start-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.4);
+        }
+
+        @keyframes titleBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* Accessibility */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* Dark Mode Toggle */
+        .dark-mode-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .dark-mode-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        /* Camera Focus Detection */
+        .camera-panel {
+            position: absolute;
+            top: 100px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid #4CAF50;
+            z-index: 100;
+            min-width: 280px;
+        }
+
+        .camera-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 15px;
+            color: #4CAF50;
+        }
+
+        .camera-video {
+            width: 240px;
+            height: 180px;
+            border-radius: 10px;
+            background: #000;
+            margin-bottom: 15px;
+        }
+
+        .focus-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .focus-status {
+            font-size: 1rem;
+            font-weight: bold;
+        }
+
+        .focus-status.focused {
+            color: #4CAF50;
+        }
+
+        .focus-status.distracted {
+            color: #f44336;
+        }
+
+        .focus-status.away {
+            color: #ff9800;
+        }
+
+        .focus-meter {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .focus-meter-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #f44336, #ff9800, #4CAF50);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .camera-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .camera-btn {
+            padding: 8px 16px;
+            background: rgba(76, 175, 80, 0.2);
+            color: #4CAF50;
+            border: 1px solid #4CAF50;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .camera-btn:hover {
+            background: rgba(76, 175, 80, 0.4);
+        }
+
+        .camera-btn.active {
+            background: #4CAF50;
+            color: white;
+        }
+
+        /* AI Coaching Panel */
+        .ai-coach-panel {
+            position: absolute;
+            bottom: 100px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid #FFD700;
+            z-index: 100;
+            max-width: 300px;
+            display: none;
+        }
+
+        .ai-coach-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 15px;
+            color: #FFD700;
+        }
+
+        .ai-message {
+            font-size: 1rem;
+            line-height: 1.4;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(255, 215, 0, 0.1);
+            border-radius: 8px;
+            border-left: 3px solid #FFD700;
+        }
+
+        /* Performance Analytics */
+        .analytics-panel {
+            position: absolute;
+            top: 200px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #667eea;
+            z-index: 100;
+            min-width: 200px;
+        }
+
+        .analytics-title {
+            font-size: 1rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 10px;
+            color: #667eea;
+        }
+
+        .analytics-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        /* Enhanced Animations */
+        @keyframes focusAlert {
+            0%, 100% { border-color: #4CAF50; }
+            50% { border-color: #f44336; }
+        }
+
+        .focus-alert {
+            animation: focusAlert 1s infinite;
+        }
+
+        @keyframes speedBoost {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .speed-boost {
+            animation: speedBoost 0.5s ease;
+        }
+
+        /* Accessibility Enhancements */
+        .high-contrast {
+            filter: contrast(150%) brightness(120%);
+        }
+
+        .large-text {
+            font-size: 1.2em;
+        }
+
+        .reduced-motion * {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .game-title { font-size: 1.5rem; }
+            .game-stats { gap: 15px; }
+            .stat-item { font-size: 1rem; }
+            .question-modal { padding: 20px; }
+            .answer-options { grid-template-columns: 1fr; }
+            .start-title { font-size: 2.5rem; }
+            .camera-panel {
+                position: relative;
+                width: 100%;
+                margin-bottom: 20px;
+            }
+            .camera-video {
+                width: 100%;
+                height: auto;
+            }
+            .analytics-panel {
+                position: relative;
+                width: 100%;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="navigation">
+        <a href="index.html" class="nav-btn">← Back to Home</a>
+    </div>
+
+    <!-- Start Screen -->
+    <div id="startScreen" class="start-screen">
+        <h1 class="start-title">🏁 Focus Racer</h1>
+        <p class="start-subtitle">Learn Python Programming While Racing!</p>
+        <p style="font-size: 1.2rem; margin-bottom: 30px; opacity: 0.8;">
+            🧠 Designed for students with ADHD &amp; Dyslexia<br>
+            🎯 Answer questions to boost your car forward!
+        </p>
+        <button id="startGameBtn" class="start-btn" onclick="startGame()">
+            🚗 Start Racing!
+        </button>
+    </div>
+
+    <!-- Dark Mode Toggle -->
+    <button class="dark-mode-toggle" onclick="toggleDarkMode()" title="Toggle Dark Mode">
+        🌙
+    </button>
+
+    <!-- Game Container -->
+    <div class="game-container">
+        <!-- Header -->
+        <div class="game-header">
+            <h1 class="game-title">🏁 Focus Racer</h1>
+            <div class="game-stats">
+                <div class="stat-item">
+                    <span>Score</span>
+                    <span id="scoreValue" class="stat-value">0</span>
+                </div>
+                <div class="stat-item">
+                    <span>Speed</span>
+                    <span id="speedValue" class="stat-value">0</span>
+                </div>
+                <div class="stat-item">
+                    <span>Level</span>
+                    <span id="levelValue" class="stat-value">1</span>
+                </div>
+                <div class="stat-item">
+                    <span>Focus</span>
+                    <span id="focusValue" class="stat-value">100%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Canvas -->
+        <canvas id="gameCanvas" width="1536" height="695"></canvas>
+
+        <!-- Camera Focus Detection Panel -->
+        <div id="cameraPanel" class="camera-panel">
+            <div class="camera-title">📹 Focus Detection</div>
+            <video id="cameraVideo" class="camera-video" autoplay muted playsinline></video>
+            <canvas id="faceCanvas" style="display: none;"></canvas>
+
+            <div class="focus-indicator">
+                <span>Focus Status:</span>
+                <span id="focusStatus" class="focus-status focused">🎯 Focused</span>
+            </div>
+
+            <div class="focus-meter">
+                <div id="focusMeterFill" class="focus-meter-fill" style="width: 100%;"></div>
+            </div>
+
+            <div class="camera-controls">
+                <button id="toggleCamera" class="camera-btn active">📹 Camera On</button>
+                <button id="calibrateCamera" class="camera-btn">🎯 Calibrate</button>
+            </div>
+
+            <div style="font-size: 0.8rem; margin-top: 10px; opacity: 0.8; text-align: center;">
+                Look at the screen to maintain focus!
+            </div>
+        </div>
+
+        <!-- AI Coaching Panel -->
+        <div id="aiCoachPanel" class="ai-coach-panel">
+            <div class="ai-coach-title">🤖 AI Learning Coach</div>
+            <div id="aiMessage" class="ai-message">
+                Great job staying focused! Keep up the excellent work! 🌟
+            </div>
+            <div style="text-align: center;">
+                <button class="camera-btn" onclick="getPersonalizedTip()">💡 Get Tip</button>
+            </div>
+        </div>
+
+        <!-- Performance Analytics Panel -->
+        <div id="analyticsPanel" class="analytics-panel">
+            <div class="analytics-title">📊 Performance Analytics</div>
+            <div class="analytics-item">
+                <span>Focus Time:</span>
+                <span id="focusTime">0:00</span>
+            </div>
+            <div class="analytics-item">
+                <span>Accuracy:</span>
+                <span id="accuracy">100%</span>
+            </div>
+            <div class="analytics-item">
+                <span>Questions:</span>
+                <span id="questionsAnswered">0/0</span>
+            </div>
+            <div class="analytics-item">
+                <span>Streak:</span>
+                <span id="currentStreak">0</span>
+            </div>
+            <div class="analytics-item">
+                <span>WPM:</span>
+                <span id="wordsPerMinute">0</span>
+            </div>
+        </div>
+
+        <!-- Keyboard Controls Instructions -->
+        <div class="controls-panel">
+            <div class="controls-title">🎮 Game Controls</div>
+            <div class="controls-instructions">
+                <div class="control-item">
+                    <span class="key">↑</span> or <span class="key">W</span> - Move to Top Lane
+                </div>
+                <div class="control-item">
+                    <span class="key">↓</span> or <span class="key">S</span> - Move to Bottom Lane
+                </div>
+                <div class="control-item">
+                    <span class="key">Space</span> - Pause Game
+                </div>
+                <div class="control-item">
+                    <span class="key">1-4</span> - Select Answer
+                </div>
+                <div class="control-item">
+                    <span class="key">H</span> - Toggle Hint
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Controls -->
+        <div class="game-controls">
+            <button class="control-btn" onclick="pauseGame()">⏸️ Pause</button>
+            <button class="control-btn" onclick="showHint()">💡 Hint</button>
+            <button class="control-btn" onclick="toggleSound()">🔊 Sound</button>
+        </div>
+    </div>
+
+    <!-- Question Modal -->
+    <div id="questionModal" class="question-modal">
+        <h2 class="question-title">🐍 Python Challenge!</h2>
+        <div id="questionText" class="question-text"></div>
+        <div id="codeBlock" class="code-block" style="display: none;"></div>
+        <div id="answerOptions" class="answer-options"></div>
+        <div style="text-align: center; margin-top: 20px;">
+            <span id="questionTimer" style="font-size: 1.2rem; color: #666;">⏰ 30s</span>
+        </div>
+    </div>
+
+    <!-- Focus Break Modal -->
+    <div id="focusBreakModal" class="focus-break-modal">
+        <div class="focus-break-content">
+            <h2 style="font-size: 2rem; margin-bottom: 20px;">🧘‍♀️ Focus Break Time!</h2>
+            <p style="font-size: 1.3rem; margin-bottom: 20px;">
+                Take a deep breath and follow the circle
+            </p>
+            <div class="breathing-circle"></div>
+            <p style="font-size: 1.1rem; opacity: 0.8;">
+                Breathe in... and breathe out... You're doing great! 💚
+            </p>
+            <button class="control-btn" onclick="endFocusBreak()" style="margin-top: 30px;">
+                ✨ I'm Ready to Continue!
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // ===== GAME STATE AND VARIABLES =====
+        let gameState = {
+            isRunning: false,
+            isPaused: false,
+            score: 0,
+            level: 1,
+            speed: 0,
+            focusLevel: 100,
+            currentQuestion: null,
+            questionTimer: 30,
+            questionTimerInterval: null,
+            gameStartTime: null,
+            totalFocusTime: 0,
+            questionsAnswered: 0,
+            correctAnswers: 0,
+            currentStreak: 0,
+            bestStreak: 0
+        };
+
+        // Canvas and rendering
+        let canvas, ctx;
+        let animationId;
+
+        // Camera and face detection
+        let cameraStream = null;
+        let faceDetectionInterval = null;
+        let lastFaceDetection = Date.now();
+        let focusHistory = [];
+        let cameraEnabled = false;
+
+        // Game objects
+        let playerCar = {
+            x: 100,
+            y: 300,
+            width: 80,
+            height: 40,
+            lane: 1, // 0 = top, 1 = middle, 2 = bottom
+            targetY: 300,
+            color: '#FF6B6B'
+        };
+
+        let obstacles = [];
+        let powerUps = [];
+        let particles = [];
+
+        // Python questions database
+        const pythonQuestions = [
+            {
+                question: "What will this code output?",
+                code: "print('Hello' + ' ' + 'World')",
+                options: ["Hello World", "HelloWorld", "Hello + World", "Error"],
+                correct: 0,
+                explanation: "The + operator concatenates strings in Python."
+            },
+            {
+                question: "Which data type is this?",
+                code: "my_list = [1, 2, 3, 4, 5]",
+                options: ["String", "List", "Dictionary", "Tuple"],
+                correct: 1,
+                explanation: "Square brackets [] define a list in Python."
+            },
+            {
+                question: "What's the result of this expression?",
+                code: "len('Python')",
+                options: ["5", "6", "7", "Error"],
+                correct: 1,
+                explanation: "len() returns the number of characters in a string."
+            },
+            {
+                question: "How do you create a comment in Python?",
+                code: "",
+                options: ["// comment", "/* comment */", "# comment", "<!-- comment -->"],
+                correct: 2,
+                explanation: "Python uses # for single-line comments."
+            },
+            {
+                question: "What will this loop do?",
+                code: "for i in range(3):\n    print(i)",
+                options: ["Print 1,2,3", "Print 0,1,2", "Print 3 times", "Error"],
+                correct: 1,
+                explanation: "range(3) generates numbers from 0 to 2."
+            },
+            {
+                question: "Which is the correct way to define a function?",
+                code: "",
+                options: ["function myFunc():", "def myFunc():", "func myFunc():", "define myFunc():"],
+                correct: 1,
+                explanation: "Python uses 'def' keyword to define functions."
+            },
+            {
+                question: "What's the output?",
+                code: "x = 10\ny = 3\nprint(x // y)",
+                options: ["3.33", "3", "4", "Error"],
+                correct: 1,
+                explanation: "// is floor division, which returns the integer part."
+            },
+            {
+                question: "How do you access the first element of a list?",
+                code: "my_list = ['a', 'b', 'c']",
+                options: ["my_list[1]", "my_list[0]", "my_list.first()", "my_list(0)"],
+                correct: 1,
+                explanation: "Python uses 0-based indexing, so first element is at index 0."
+            }
+        ];
+
+        // AI coaching messages
+        const aiMessages = {
+            focused: [
+                "Excellent focus! You're in the zone! 🎯",
+                "Great concentration! Keep it up! 🌟",
+                "Perfect! Your focus is helping you learn faster! 💪",
+                "Amazing focus! You're becoming a Python master! 🐍"
+            ],
+            distracted: [
+                "I notice you're getting distracted. Take a deep breath! 🧘‍♀️",
+                "Let's refocus! Look at the screen and stay engaged! 👀",
+                "Distraction happens! Let's get back on track! 🎯",
+                "Remember, focused learning is effective learning! 💡"
+            ],
+            encouragement: [
+                "You're doing great! Every question makes you stronger! 💪",
+                "Learning Python is a journey. You're making progress! 🚀",
+                "Mistakes are learning opportunities! Keep going! 🌱",
+                "Your persistence is impressive! Keep coding! 👨‍💻"
+            ],
+            tips: [
+                "💡 Tip: Practice coding a little bit every day!",
+                "💡 Tip: Don't just memorize - understand the logic!",
+                "💡 Tip: Try writing code examples yourself!",
+                "💡 Tip: Break complex problems into smaller parts!"
+            ]
+        };
+
+        // ===== INITIALIZATION =====
+        document.addEventListener('DOMContentLoaded', function() {
+            canvas = document.getElementById('gameCanvas');
+            ctx = canvas.getContext('2d');
+
+            // Set canvas size
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+
+            // Initialize camera
+            initializeCamera();
+
+            // Setup event listeners
+            setupEventListeners();
+
+            // Start analytics updates
+            setInterval(updateAnalytics, 1000);
+
+            console.log('🏁 Focus Racer initialized successfully!');
+        });
+
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+
+            // Update player position based on new canvas size
+            playerCar.y = canvas.height / 2;
+            playerCar.targetY = canvas.height / 2;
+        }
+
+        function setupEventListeners() {
+            // Keyboard controls
+            document.addEventListener('keydown', handleKeyDown);
+            document.addEventListener('keyup', handleKeyUp);
+
+            // Camera controls
+            document.getElementById('toggleCamera').addEventListener('click', toggleCamera);
+            document.getElementById('calibrateCamera').addEventListener('click', calibrateCamera);
+
+            // Prevent context menu on canvas
+            canvas.addEventListener('contextmenu', e => e.preventDefault());
+
+            // Focus/blur events for tab switching detection
+            window.addEventListener('focus', handleWindowFocus);
+            window.addEventListener('blur', handleWindowBlur);
+
+            // Visibility API for tab switching
+            document.addEventListener('visibilitychange', handleVisibilityChange);
+        }
+
+        // ===== CAMERA AND FACE DETECTION =====
+        async function initializeCamera() {
+            try {
+                // Request camera permission
+                cameraStream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        width: 240,
+                        height: 180,
+                        facingMode: 'user'
+                    }
+                });
+
+                const video = document.getElementById('cameraVideo');
+                video.srcObject = cameraStream;
+
+                // Wait for video to load
+                video.addEventListener('loadedmetadata', () => {
+                    startFaceDetection();
+                    cameraEnabled = true;
+                    updateCameraStatus();
+                });
+
+                console.log('📹 Camera initialized successfully');
+
+            } catch (error) {
+                console.error('Camera initialization failed:', error);
+                showCameraError();
+            }
+        }
+
+        function startFaceDetection() {
+            // Simple face detection using video analysis
+            faceDetectionInterval = setInterval(() => {
+                detectFaceAndFocus();
+            }, 500); // Check every 500ms
+        }
+
+        function detectFaceAndFocus() {
+            const video = document.getElementById('cameraVideo');
+            const canvas = document.getElementById('faceCanvas');
+            const ctx = canvas.getContext('2d');
+
+            if (!video.videoWidth || !video.videoHeight) return;
+
+            // Set canvas size to match video
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+
+            // Draw video frame to canvas for analysis
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Get image data for analysis
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+            // Simple face detection based on movement and brightness
+            const faceDetected = analyzeFacePresence(imageData);
+            const eyeGazeDetected = analyzeEyeGaze(imageData);
+
+            updateFocusStatus(faceDetected, eyeGazeDetected);
+        }
+
+        function analyzeFacePresence(imageData) {
+            // Simple algorithm to detect face presence
+            // This is a simplified version - in production, you'd use a proper face detection library
+
+            const data = imageData.data;
+            let skinPixels = 0;
+            let totalPixels = data.length / 4;
+
+            // Count skin-colored pixels (simplified)
+            for (let i = 0; i < data.length; i += 4) {
+                const r = data[i];
+                const g = data[i + 1];
+                const b = data[i + 2];
+
+                // Simple skin color detection
+                if (r > 95 && g > 40 && b > 20 &&
+                    Math.max(r, g, b) - Math.min(r, g, b) > 15 &&
+                    Math.abs(r - g) > 15 && r > g && r > b) {
+                    skinPixels++;
+                }
+            }
+
+            const skinRatio = skinPixels / totalPixels;
+            return skinRatio > 0.02; // Face detected if >2% skin pixels
+        }
+
+        function analyzeEyeGaze(imageData) {
+            // Simplified eye gaze detection
+            // In a real implementation, you'd use eye tracking libraries
+
+            // For now, we'll use a combination of factors:
+            // 1. Face position stability
+            // 2. Time since last detection
+            // 3. Window focus status
+
+            const timeSinceLastDetection = Date.now() - lastFaceDetection;
+            const isWindowFocused = !document.hidden;
+
+            return timeSinceLastDetection < 2000 && isWindowFocused;
+        }
+
+        function updateFocusStatus(faceDetected, eyeGazeDetected) {
+            const focusStatus = document.getElementById('focusStatus');
+            const focusMeter = document.getElementById('focusMeterFill');
+
+            let newFocusLevel = gameState.focusLevel;
+            let statusText = '';
+            let statusClass = '';
+
+            if (faceDetected && eyeGazeDetected) {
+                // Focused state
+                newFocusLevel = Math.min(100, gameState.focusLevel + 2);
+                statusText = '🎯 Focused';
+                statusClass = 'focused';
+                lastFaceDetection = Date.now();
+
+                // Add to focus history
+                focusHistory.push({ time: Date.now(), focused: true });
+
+            } else if (faceDetected && !eyeGazeDetected) {
+                // Present but not focused
+                newFocusLevel = Math.max(0, gameState.focusLevel - 1);
+                statusText = '👀 Look at Screen';
+                statusClass = 'distracted';
+
+                focusHistory.push({ time: Date.now(), focused: false });
+
+            } else {
+                // Not present
+                newFocusLevel = Math.max(0, gameState.focusLevel - 3);
+                statusText = '❌ Face Not Detected';
+                statusClass = 'away';
+
+                focusHistory.push({ time: Date.now(), focused: false });
+            }
+
+            // Update focus level
+            gameState.focusLevel = newFocusLevel;
+
+            // Update UI
+            focusStatus.textContent = statusText;
+            focusStatus.className = `focus-status ${statusClass}`;
+            focusMeter.style.width = `${gameState.focusLevel}%`;
+
+            // Update game speed based on focus
+            updateGameSpeedFromFocus();
+
+            // Show AI coaching if needed
+            if (gameState.focusLevel < 50 && Math.random() < 0.1) {
+                showAICoaching('distracted');
+            } else if (gameState.focusLevel > 80 && Math.random() < 0.05) {
+                showAICoaching('focused');
+            }
+
+            // Clean up old focus history (keep last 60 seconds)
+            const cutoffTime = Date.now() - 60000;
+            focusHistory = focusHistory.filter(entry => entry.time > cutoffTime);
+        }
+
+        function updateGameSpeedFromFocus() {
+            // Adjust game speed based on focus level
+            const baseSpeed = gameState.level * 2;
+            const focusMultiplier = gameState.focusLevel / 100;
+            gameState.speed = Math.max(1, baseSpeed * focusMultiplier);
+
+            // Update speed display
+            document.getElementById('speedValue').textContent = Math.round(gameState.speed);
+        }
+
+        function toggleCamera() {
+            const button = document.getElementById('toggleCamera');
+
+            if (cameraEnabled) {
+                // Turn off camera
+                if (cameraStream) {
+                    cameraStream.getTracks().forEach(track => track.stop());
+                }
+                if (faceDetectionInterval) {
+                    clearInterval(faceDetectionInterval);
+                }
+                cameraEnabled = false;
+                button.textContent = '📹 Camera Off';
+                button.classList.remove('active');
+
+                // Reset focus to manual mode
+                gameState.focusLevel = 75;
+                document.getElementById('focusStatus').textContent = '📹 Camera Disabled';
+
+            } else {
+                // Turn on camera
+                initializeCamera();
+                button.textContent = '📹 Camera On';
+                button.classList.add('active');
+            }
+        }
+
+        function calibrateCamera() {
+            if (!cameraEnabled) {
+                alert('Please enable camera first!');
+                return;
+            }
+
+            // Reset focus detection
+            lastFaceDetection = Date.now();
+            gameState.focusLevel = 100;
+            focusHistory = [];
+
+            // Show calibration message
+            showAICoaching('tips');
+
+            alert('Camera calibrated! Look directly at the screen for best results.');
+        }
+
+        function showCameraError() {
+            const cameraPanel = document.getElementById('cameraPanel');
+            cameraPanel.innerHTML = `
+                <div class="camera-title">📹 Camera Unavailable</div>
+                <div style="text-align: center; padding: 20px;">
+                    <p>Camera access denied or unavailable.</p>
+                    <p>Focus tracking will use manual mode.</p>
+                    <button class="camera-btn" onclick="initializeCamera()">🔄 Retry</button>
+                </div>
+            `;
+        }
+
+        function updateCameraStatus() {
+            const button = document.getElementById('toggleCamera');
+            if (cameraEnabled) {
+                button.textContent = '📹 Camera On';
+                button.classList.add('active');
+            } else {
+                button.textContent = '📹 Camera Off';
+                button.classList.remove('active');
+            }
+        }
+
+        // ===== AI COACHING SYSTEM =====
+        function showAICoaching(type) {
+            const aiPanel = document.getElementById('aiCoachPanel');
+            const aiMessage = document.getElementById('aiMessage');
+
+            let messages = aiMessages[type] || aiMessages.encouragement;
+            let randomMessage = messages[Math.floor(Math.random() * messages.length)];
+
+            aiMessage.textContent = randomMessage;
+            aiPanel.style.display = 'block';
+
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                aiPanel.style.display = 'none';
+            }, 5000);
+        }
+
+        function getPersonalizedTip() {
+            const tips = aiMessages.tips;
+            const randomTip = tips[Math.floor(Math.random() * tips.length)];
+
+            document.getElementById('aiMessage').textContent = randomTip;
+
+            // Add personalization based on performance
+            const accuracy = gameState.questionsAnswered > 0 ?
+                (gameState.correctAnswers / gameState.questionsAnswered * 100).toFixed(0) : 100;
+
+            if (accuracy < 70) {
+                document.getElementById('aiMessage').textContent += "\n\n🎯 Focus on understanding the concepts rather than rushing!";
+            } else if (gameState.currentStreak > 5) {
+                document.getElementById('aiMessage').textContent += "\n\n🔥 You're on fire! Keep that streak going!";
+            }
+        }
+
+        // ===== GAME MECHANICS =====
+        function startGame() {
+            document.getElementById('startScreen').style.display = 'none';
+            gameState.isRunning = true;
+            gameState.gameStartTime = Date.now();
+
+            // Initialize game objects
+            initializeGameObjects();
+
+            // Start game loop
+            gameLoop();
+
+            // Show first question after 3 seconds
+            setTimeout(showQuestion, 3000);
+
+            // Show AI coaching
+            setTimeout(() => showAICoaching('encouragement'), 1000);
+
+            console.log('🏁 Game started!');
+        }
+
+        function initializeGameObjects() {
+            // Reset player position
+            playerCar.x = 100;
+            playerCar.y = canvas.height / 2;
+            playerCar.targetY = canvas.height / 2;
+            playerCar.lane = 1;
+
+            // Clear arrays
+            obstacles = [];
+            powerUps = [];
+            particles = [];
+
+            // Create initial obstacles
+            for (let i = 0; i < 3; i++) {
+                createObstacle();
+            }
+        }
+
+        function gameLoop() {
+            if (!gameState.isRunning || gameState.isPaused) {
+                if (gameState.isRunning) {
+                    animationId = requestAnimationFrame(gameLoop);
+                }
+                return;
+            }
+
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw background
+            drawBackground();
+
+            // Update and draw game objects
+            updatePlayer();
+            updateObstacles();
+            updatePowerUps();
+            updateParticles();
+
+            // Draw everything
+            drawPlayer();
+            drawObstacles();
+            drawPowerUps();
+            drawParticles();
+
+            // Check collisions
+            checkCollisions();
+
+            // Update UI
+            updateUI();
+
+            // Continue loop
+            animationId = requestAnimationFrame(gameLoop);
+        }
+
+        function drawBackground() {
+            // Sky gradient
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, '#87CEEB');
+            gradient.addColorStop(0.5, '#98FB98');
+            gradient.addColorStop(1, '#90EE90');
+
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Road lanes
+            const laneHeight = canvas.height / 3;
+            ctx.strokeStyle = '#FFFFFF';
+            ctx.lineWidth = 3;
+            ctx.setLineDash([20, 20]);
+
+            // Lane dividers
+            ctx.beginPath();
+            ctx.moveTo(0, laneHeight);
+            ctx.lineTo(canvas.width, laneHeight);
+            ctx.moveTo(0, laneHeight * 2);
+            ctx.lineTo(canvas.width, laneHeight * 2);
+            ctx.stroke();
+
+            ctx.setLineDash([]);
+        }
+
+        function updatePlayer() {
+            // Smooth movement to target lane
+            const laneHeight = canvas.height / 3;
+            const targetY = laneHeight * playerCar.lane + laneHeight / 2;
+
+            playerCar.targetY = targetY;
+            playerCar.y += (playerCar.targetY - playerCar.y) * 0.15;
+        }
+
+        function drawPlayer() {
+            // Car body
+            ctx.fillStyle = playerCar.color;
+            ctx.fillRect(playerCar.x, playerCar.y - playerCar.height/2, playerCar.width, playerCar.height);
+
+            // Car details
+            ctx.fillStyle = '#333';
+            ctx.fillRect(playerCar.x + 10, playerCar.y - 15, 15, 10);
+            ctx.fillRect(playerCar.x + 10, playerCar.y + 5, 15, 10);
+
+            // Speed boost effect
+            if (gameState.speed > gameState.level * 3) {
+                ctx.fillStyle = 'rgba(255, 255, 0, 0.5)';
+                ctx.fillRect(playerCar.x - 10, playerCar.y - 20, 10, 40);
+            }
+        }
+
+        function createObstacle() {
+            const laneHeight = canvas.height / 3;
+            const lane = Math.floor(Math.random() * 3);
+
+            obstacles.push({
+                x: canvas.width + Math.random() * 200,
+                y: laneHeight * lane + laneHeight / 2,
+                width: 60,
+                height: 35,
+                speed: gameState.speed + Math.random() * 2,
+                color: '#FF4444'
+            });
+        }
+
+        function updateObstacles() {
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                const obstacle = obstacles[i];
+                obstacle.x -= obstacle.speed;
+
+                // Remove obstacles that are off-screen
+                if (obstacle.x + obstacle.width < 0) {
+                    obstacles.splice(i, 1);
+                    gameState.score += 10;
+
+                    // Create new obstacle
+                    if (Math.random() < 0.7) {
+                        createObstacle();
+                    }
+                }
+            }
+        }
+
+        function drawObstacles() {
+            obstacles.forEach(obstacle => {
+                ctx.fillStyle = obstacle.color;
+                ctx.fillRect(obstacle.x, obstacle.y - obstacle.height/2, obstacle.width, obstacle.height);
+
+                // Obstacle details
+                ctx.fillStyle = '#AA0000';
+                ctx.fillRect(obstacle.x + 5, obstacle.y - 10, 10, 8);
+                ctx.fillRect(obstacle.x + 5, obstacle.y + 2, 10, 8);
+            });
+        }
+
+        function updatePowerUps() {
+            // Create power-ups occasionally
+            if (Math.random() < 0.005) {
+                const laneHeight = canvas.height / 3;
+                const lane = Math.floor(Math.random() * 3);
+
+                powerUps.push({
+                    x: canvas.width,
+                    y: laneHeight * lane + laneHeight / 2,
+                    width: 30,
+                    height: 30,
+                    speed: gameState.speed,
+                    type: Math.random() < 0.5 ? 'speed' : 'focus',
+                    collected: false
+                });
+            }
+
+            // Update power-up positions
+            for (let i = powerUps.length - 1; i >= 0; i--) {
+                const powerUp = powerUps[i];
+                powerUp.x -= powerUp.speed;
+
+                if (powerUp.x + powerUp.width < 0) {
+                    powerUps.splice(i, 1);
+                }
+            }
+        }
+
+        function drawPowerUps() {
+            powerUps.forEach(powerUp => {
+                if (powerUp.collected) return;
+
+                ctx.save();
+                ctx.translate(powerUp.x + powerUp.width/2, powerUp.y);
+                ctx.rotate(Date.now() * 0.005);
+
+                if (powerUp.type === 'speed') {
+                    ctx.fillStyle = '#FFD700';
+                    ctx.fillRect(-15, -15, 30, 30);
+                    ctx.fillStyle = '#FFA500';
+                    ctx.font = '20px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('⚡', 0, 7);
+                } else {
+                    ctx.fillStyle = '#4CAF50';
+                    ctx.fillRect(-15, -15, 30, 30);
+                    ctx.fillStyle = '#2E7D32';
+                    ctx.font = '20px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('🎯', 0, 7);
+                }
+
+                ctx.restore();
+            });
+        }
+
+        function updateParticles() {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const particle = particles[i];
+                particle.x += particle.vx;
+                particle.y += particle.vy;
+                particle.life--;
+
+                if (particle.life <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+        }
+
+        function drawParticles() {
+            particles.forEach(particle => {
+                ctx.save();
+                ctx.globalAlpha = particle.life / particle.maxLife;
+                ctx.fillStyle = particle.color;
+                ctx.fillRect(particle.x, particle.y, particle.size, particle.size);
+                ctx.restore();
+            });
+        }
+
+        function checkCollisions() {
+            // Check obstacle collisions
+            obstacles.forEach(obstacle => {
+                if (isColliding(playerCar, obstacle)) {
+                    handleCollision(obstacle);
+                }
+            });
+
+            // Check power-up collisions
+            powerUps.forEach(powerUp => {
+                if (!powerUp.collected && isColliding(playerCar, powerUp)) {
+                    collectPowerUp(powerUp);
+                }
+            });
+        }
+
+        function isColliding(obj1, obj2) {
+            return obj1.x < obj2.x + obj2.width &&
+                   obj1.x + obj1.width > obj2.x &&
+                   obj1.y - obj1.height/2 < obj2.y + obj2.height/2 &&
+                   obj1.y + obj1.height/2 > obj2.y - obj2.height/2;
+        }
+
+        function handleCollision(obstacle) {
+            // Reduce focus and score
+            gameState.focusLevel = Math.max(0, gameState.focusLevel - 20);
+            gameState.score = Math.max(0, gameState.score - 50);
+            gameState.currentStreak = 0;
+
+            // Create explosion particles
+            createExplosion(obstacle.x, obstacle.y);
+
+            // Remove obstacle
+            const index = obstacles.indexOf(obstacle);
+            if (index > -1) {
+                obstacles.splice(index, 1);
+            }
+
+            // Show AI coaching
+            showAICoaching('distracted');
+
+            // Pause briefly
+            gameState.isPaused = true;
+            setTimeout(() => {
+                gameState.isPaused = false;
+            }, 500);
+        }
+
+        function collectPowerUp(powerUp) {
+            powerUp.collected = true;
+
+            if (powerUp.type === 'speed') {
+                gameState.speed += 2;
+                gameState.score += 50;
+                createParticleEffect(powerUp.x, powerUp.y, '#FFD700');
+            } else if (powerUp.type === 'focus') {
+                gameState.focusLevel = Math.min(100, gameState.focusLevel + 25);
+                gameState.score += 30;
+                createParticleEffect(powerUp.x, powerUp.y, '#4CAF50');
+            }
+
+            // Remove power-up
+            const index = powerUps.indexOf(powerUp);
+            if (index > -1) {
+                powerUps.splice(index, 1);
+            }
+        }
+
+        function createExplosion(x, y) {
+            for (let i = 0; i < 15; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 10,
+                    vy: (Math.random() - 0.5) * 10,
+                    size: Math.random() * 5 + 2,
+                    color: '#FF4444',
+                    life: 30,
+                    maxLife: 30
+                });
+            }
+        }
+
+        function createParticleEffect(x, y, color) {
+            for (let i = 0; i < 10; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 6,
+                    vy: (Math.random() - 0.5) * 6,
+                    size: Math.random() * 3 + 1,
+                    color: color,
+                    life: 20,
+                    maxLife: 20
+                });
+            }
+        }
+
+        function updateUI() {
+            document.getElementById('scoreValue').textContent = gameState.score;
+            document.getElementById('speedValue').textContent = Math.round(gameState.speed);
+            document.getElementById('levelValue').textContent = gameState.level;
+            document.getElementById('focusValue').textContent = Math.round(gameState.focusLevel) + '%';
+        }
+
+        // ===== QUESTION SYSTEM =====
+        function showQuestion() {
+            if (!gameState.isRunning) return;
+
+            // Pause game
+            gameState.isPaused = true;
+
+            // Select random question
+            const questionIndex = Math.floor(Math.random() * pythonQuestions.length);
+            gameState.currentQuestion = pythonQuestions[questionIndex];
+
+            // Display question
+            const modal = document.getElementById('questionModal');
+            const questionText = document.getElementById('questionText');
+            const codeBlock = document.getElementById('codeBlock');
+            const answerOptions = document.getElementById('answerOptions');
+
+            questionText.textContent = gameState.currentQuestion.question;
+
+            // Show code block if present
+            if (gameState.currentQuestion.code) {
+                codeBlock.style.display = 'block';
+                codeBlock.textContent = gameState.currentQuestion.code;
+            } else {
+                codeBlock.style.display = 'none';
+            }
+
+            // Create answer buttons
+            answerOptions.innerHTML = '';
+            gameState.currentQuestion.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = 'answer-btn';
+                button.textContent = option;
+                button.onclick = () => selectAnswer(index);
+                button.setAttribute('data-answer', index);
+                answerOptions.appendChild(button);
+            });
+
+            // Show modal
+            modal.style.display = 'block';
+
+            // Start question timer
+            gameState.questionTimer = 30;
+            gameState.questionTimerInterval = setInterval(updateQuestionTimer, 1000);
+
+            // Focus first answer button for keyboard navigation
+            answerOptions.firstChild?.focus();
+        }
+
+        function selectAnswer(selectedIndex) {
+            if (!gameState.currentQuestion) return;
+
+            // Clear timer
+            if (gameState.questionTimerInterval) {
+                clearInterval(gameState.questionTimerInterval);
+                gameState.questionTimerInterval = null;
+            }
+
+            const isCorrect = selectedIndex === gameState.currentQuestion.correct;
+            const buttons = document.querySelectorAll('.answer-btn');
+
+            // Update button styles
+            buttons.forEach((button, index) => {
+                if (index === gameState.currentQuestion.correct) {
+                    button.classList.add('correct');
+                } else if (index === selectedIndex && !isCorrect) {
+                    button.classList.add('incorrect');
+                }
+                button.disabled = true;
+            });
+
+            // Update game state
+            gameState.questionsAnswered++;
+
+            if (isCorrect) {
+                gameState.correctAnswers++;
+                gameState.currentStreak++;
+                gameState.bestStreak = Math.max(gameState.bestStreak, gameState.currentStreak);
+
+                // Boost speed and score
+                gameState.speed += 1;
+                gameState.score += 100 + (gameState.currentStreak * 10);
+                gameState.focusLevel = Math.min(100, gameState.focusLevel + 10);
+
+                // Show success effect
+                document.querySelector('.game-container').classList.add('speed-boost');
+                setTimeout(() => {
+                    document.querySelector('.game-container').classList.remove('speed-boost');
+                }, 500);
+
+                showAICoaching('focused');
+
+            } else {
+                gameState.currentStreak = 0;
+                gameState.focusLevel = Math.max(0, gameState.focusLevel - 15);
+
+                showAICoaching('encouragement');
+            }
+
+            // Show explanation briefly
+            setTimeout(() => {
+                alert(`${isCorrect ? '✅ Correct!' : '❌ Incorrect'}\n\n${gameState.currentQuestion.explanation}`);
+                hideQuestion();
+            }, 1500);
+
+            // Level up check
+            if (gameState.questionsAnswered % 5 === 0) {
+                gameState.level++;
+                showLevelUp();
+            }
+        }
+
+        function updateQuestionTimer() {
+            gameState.questionTimer--;
+            document.getElementById('questionTimer').textContent = `⏰ ${gameState.questionTimer}s`;
+
+            if (gameState.questionTimer <= 0) {
+                // Time's up - treat as incorrect
+                selectAnswer(-1); // Invalid answer index
+            }
+        }
+
+        function hideQuestion() {
+            document.getElementById('questionModal').style.display = 'none';
+            gameState.currentQuestion = null;
+            gameState.isPaused = false;
+
+            // Schedule next question
+            const nextQuestionDelay = 8000 + Math.random() * 7000; // 8-15 seconds
+            setTimeout(showQuestion, nextQuestionDelay);
+        }
+
+        function showLevelUp() {
+            // Create level up effect
+            const levelUpDiv = document.createElement('div');
+            levelUpDiv.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: linear-gradient(135deg, #FFD700, #FFA500);
+                color: #333;
+                padding: 30px 50px;
+                border-radius: 20px;
+                font-size: 2rem;
+                font-weight: bold;
+                z-index: 1000;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                animation: levelUpAnimation 2s ease;
+            `;
+            levelUpDiv.textContent = `🎉 Level ${gameState.level}! 🎉`;
+
+            document.body.appendChild(levelUpDiv);
+
+            setTimeout(() => {
+                document.body.removeChild(levelUpDiv);
+            }, 2000);
+
+            // Add level up animation CSS
+            if (!document.getElementById('levelUpStyles')) {
+                const style = document.createElement('style');
+                style.id = 'levelUpStyles';
+                style.textContent = `
+                    @keyframes levelUpAnimation {
+                        0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+                        50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+                        100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+        }
+
+        // ===== KEYBOARD CONTROLS =====
+        function handleKeyDown(event) {
+            if (!gameState.isRunning) return;
+
+            switch(event.code) {
+                case 'ArrowUp':
+                case 'KeyW':
+                    event.preventDefault();
+                    if (playerCar.lane > 0) {
+                        playerCar.lane--;
+                    }
+                    break;
+
+                case 'ArrowDown':
+                case 'KeyS':
+                    event.preventDefault();
+                    if (playerCar.lane < 2) {
+                        playerCar.lane++;
+                    }
+                    break;
+
+                case 'Space':
+                    event.preventDefault();
+                    pauseGame();
+                    break;
+
+                case 'KeyH':
+                    event.preventDefault();
+                    showHint();
+                    break;
+
+                // Answer selection with number keys
+                case 'Digit1':
+                    if (gameState.currentQuestion) selectAnswer(0);
+                    break;
+                case 'Digit2':
+                    if (gameState.currentQuestion) selectAnswer(1);
+                    break;
+                case 'Digit3':
+                    if (gameState.currentQuestion) selectAnswer(2);
+                    break;
+                case 'Digit4':
+                    if (gameState.currentQuestion) selectAnswer(3);
+                    break;
+            }
+        }
+
+        function handleKeyUp(event) {
+            // Handle key releases if needed
+        }
+
+        // ===== GAME CONTROLS =====
+        function pauseGame() {
+            if (!gameState.isRunning) return;
+
+            gameState.isPaused = !gameState.isPaused;
+
+            const pauseBtn = document.querySelector('.control-btn');
+            if (gameState.isPaused) {
+                pauseBtn.textContent = '▶️ Resume';
+                showAICoaching('tips');
+            } else {
+                pauseBtn.textContent = '⏸️ Pause';
+            }
+        }
+
+        function showHint() {
+            if (gameState.currentQuestion) {
+                const hint = `💡 Hint: ${gameState.currentQuestion.explanation}`;
+                alert(hint);
+            } else {
+                showAICoaching('tips');
+            }
+        }
+
+        function toggleSound() {
+            // Sound toggle functionality (placeholder)
+            const soundBtn = document.querySelector('.control-btn:last-child');
+            if (soundBtn.textContent.includes('🔊')) {
+                soundBtn.textContent = '🔇 Sound';
+            } else {
+                soundBtn.textContent = '🔊 Sound';
+            }
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const toggle = document.querySelector('.dark-mode-toggle');
+            toggle.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
+        }
+
+        // ===== FOCUS BREAK SYSTEM =====
+        function startFocusBreak() {
+            document.getElementById('focusBreakModal').style.display = 'flex';
+            gameState.isPaused = true;
+
+            // Auto-end break after 60 seconds
+            setTimeout(() => {
+                if (document.getElementById('focusBreakModal').style.display === 'flex') {
+                    endFocusBreak();
+                }
+            }, 60000);
+        }
+
+        function endFocusBreak() {
+            document.getElementById('focusBreakModal').style.display = 'none';
+            gameState.isPaused = false;
+            gameState.focusLevel = Math.min(100, gameState.focusLevel + 30);
+
+            showAICoaching('focused');
+        }
+
+        // ===== WINDOW FOCUS DETECTION =====
+        function handleWindowFocus() {
+            if (gameState.isRunning && !cameraEnabled) {
+                gameState.focusLevel = Math.min(100, gameState.focusLevel + 5);
+            }
+        }
+
+        function handleWindowBlur() {
+            if (gameState.isRunning && !cameraEnabled) {
+                gameState.focusLevel = Math.max(0, gameState.focusLevel - 10);
+            }
+        }
+
+        function handleVisibilityChange() {
+            if (document.hidden) {
+                if (gameState.isRunning && !cameraEnabled) {
+                    gameState.focusLevel = Math.max(0, gameState.focusLevel - 15);
+                    showAICoaching('distracted');
+                }
+            } else {
+                if (gameState.isRunning && !cameraEnabled) {
+                    gameState.focusLevel = Math.min(100, gameState.focusLevel + 10);
+                }
+            }
+        }
+
+        // ===== ANALYTICS AND PERFORMANCE TRACKING =====
+        function updateAnalytics() {
+            if (!gameState.isRunning) return;
+
+            // Calculate focus time
+            const currentTime = Date.now();
+            if (gameState.gameStartTime) {
+                const totalTime = (currentTime - gameState.gameStartTime) / 1000;
+                const focusTime = Math.floor(totalTime * (gameState.focusLevel / 100));
+                gameState.totalFocusTime = focusTime;
+
+                document.getElementById('focusTime').textContent = formatTime(focusTime);
+            }
+
+            // Calculate accuracy
+            const accuracy = gameState.questionsAnswered > 0 ?
+                (gameState.correctAnswers / gameState.questionsAnswered * 100).toFixed(0) : 100;
+            document.getElementById('accuracy').textContent = accuracy + '%';
+
+            // Update questions answered
+            document.getElementById('questionsAnswered').textContent =
+                `${gameState.correctAnswers}/${gameState.questionsAnswered}`;
+
+            // Update streak
+            document.getElementById('currentStreak').textContent = gameState.currentStreak;
+
+            // Calculate words per minute (based on questions answered)
+            const wpm = gameState.gameStartTime ?
+                Math.round((gameState.questionsAnswered * 10) / ((currentTime - gameState.gameStartTime) / 60000)) : 0;
+            document.getElementById('wordsPerMinute').textContent = wpm;
+
+            // Trigger focus break if focus is very low
+            if (gameState.focusLevel < 20 && Math.random() < 0.1) {
+                startFocusBreak();
+            }
+        }
+
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }
+
+        // ===== UTILITY FUNCTIONS =====
+        function getRandomElement(array) {
+            return array[Math.floor(Math.random() * array.length)];
+        }
+
+        function clamp(value, min, max) {
+            return Math.min(Math.max(value, min), max);
+        }
+
+        // ===== INITIALIZATION COMPLETE =====
+        console.log('🎮 Focus Racer - Enhanced Edition Loaded!');
+        console.log('📹 Camera-based focus detection enabled');
+        console.log('🤖 AI coaching system active');
+        console.log('📊 Performance analytics running');
+        console.log('🐍 Python learning questions ready');
+        console.log('🏁 Ready to race and learn!');
+    </script>
+</body>
+</html>

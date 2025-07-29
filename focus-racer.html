@@ -1,0 +1,2061 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Focus Racer - Learn Python While Racing | EduBridge Games</title>
+
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Learn Python programming through an exciting racing game. Answer coding questions to keep your car moving and master Python fundamentals.">
+    <meta name="keywords" content="Python learning, coding game, programming education, interactive learning, Python tutorial">
+    <meta name="author" content="EduBridge Team">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏁</text></svg>">
+
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#667eea">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=OpenDyslexic:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'OpenDyslexic', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .game-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header UI */
+        .game-header {
+            height: 80px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 100;
+        }
+
+        .game-title {
+            font-family: 'Fredoka One', cursive;
+            font-size: 2rem;
+            color: #FFD700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .game-stats {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        /* Power-ups Bar */
+        .powerups-bar {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            justify-content: center;
+        }
+
+        .powerup-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            padding: 8px 12px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .powerup-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .powerup-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            margin-bottom: 2px;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #FFD700;
+        }
+
+        /* Navigation */
+        .navigation {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50px;
+            padding: 10px 20px;
+            color: #333;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .nav-btn:hover {
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+
+        /* Game Area */
+        .game-area {
+            flex: 1;
+            position: relative;
+            background: linear-gradient(to bottom, #87CEEB 0%, #98FB98 100%);
+            overflow: hidden;
+        }
+
+        /* Road */
+        .road {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 400px;
+            height: 100%;
+            background: #333;
+            background-image: 
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 40px,
+                    #FFD700 40px,
+                    #FFD700 60px
+                );
+            animation: roadMove 1s linear infinite;
+        }
+
+        @keyframes roadMove {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 60px; }
+        }
+
+        /* Car */
+        .car {
+            position: absolute;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 120px;
+            background: #FF4444;
+            border-radius: 10px 10px 5px 5px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transition: left 0.2s ease;
+            z-index: 10;
+        }
+
+        .car::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            height: 30px;
+            background: #87CEEB;
+            border-radius: 5px;
+        }
+
+        .car::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 5px;
+            right: 5px;
+            height: 10px;
+            background: #222;
+            border-radius: 50%;
+        }
+
+        /* Obstacles */
+        .obstacle {
+            position: absolute;
+            width: 50px;
+            height: 100px;
+            background: #666;
+            border-radius: 5px;
+            animation: obstacleMove 3s linear infinite;
+        }
+
+        @keyframes obstacleMove {
+            0% { top: -100px; }
+            100% { top: 100vh; }
+        }
+
+        /* Question Panel */
+        .question-panel {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            z-index: 1000;
+            display: none;
+        }
+
+        .question-panel.show {
+            display: block;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -60%);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%);
+            }
+        }
+
+        /* Enhanced Question Panel */
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .question-title {
+            font-size: 1.5rem;
+            color: #333;
+            margin: 0;
+        }
+
+        .question-meta {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .category-badge, .difficulty-badge, .points-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .category-badge {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .difficulty-badge {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+        }
+
+        .points-badge {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: white;
+        }
+
+        /* Timer System */
+        .question-timer {
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .timer-bar {
+            flex: 1;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .timer-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #FFC107, #FF5722);
+            border-radius: 4px;
+            transition: width 0.1s linear;
+            width: 100%;
+        }
+
+        .timer-text {
+            font-weight: bold;
+            color: #333;
+            min-width: 40px;
+        }
+
+        .question-text {
+            font-size: 1.1rem;
+            color: #555;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .code-block {
+            background: #f8f8f8;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            margin: 15px 0;
+            white-space: pre-wrap;
+        }
+
+        .answer-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .answer-btn {
+            padding: 12px 20px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+
+        .answer-btn:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .answer-btn.correct {
+            border-color: #10b981;
+            background: #d1fae5;
+        }
+
+        .answer-btn.incorrect {
+            border-color: #ef4444;
+            background: #fee2e2;
+        }
+
+        /* Hint and Explanation Systems */
+        .hint-section {
+            margin-top: 15px;
+            padding: 15px;
+            background: #fff3cd;
+            border-radius: 8px;
+            border-left: 4px solid #ffc107;
+        }
+
+        .hint-btn {
+            background: #ffc107;
+            color: #333;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .hint-btn:hover {
+            background: #ffb300;
+            transform: translateY(-1px);
+        }
+
+        .explanation-panel {
+            margin-top: 15px;
+            padding: 15px;
+            background: #d1ecf1;
+            border-radius: 8px;
+            border-left: 4px solid #17a2b8;
+        }
+
+        .explanation-panel h4 {
+            margin: 0 0 10px 0;
+            color: #0c5460;
+        }
+
+        .explanation-text {
+            color: #0c5460;
+            line-height: 1.5;
+        }
+
+        /* Modal System */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 3000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 0;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8) translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 20px 20px 0 0;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            padding: 0;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Shop System */
+        .shop-content, .garage-content, .achievements-content {
+            padding: 20px;
+        }
+
+        .coins-display {
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #667eea;
+        }
+
+        .shop-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .shop-item {
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .shop-item:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .shop-item.affordable {
+            border-color: #4CAF50;
+        }
+
+        .shop-item.expensive {
+            border-color: #ff5722;
+            opacity: 0.7;
+        }
+
+        .item-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .item-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .item-description {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .item-cost {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        /* Car Garage System */
+        .car-selection {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .car-item {
+            border: 3px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .car-item.selected {
+            border-color: #4CAF50;
+            background: #f1f8e9;
+        }
+
+        .car-item.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .car-preview {
+            width: 60px;
+            height: 100px;
+            margin: 0 auto 10px;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .car-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .car-stats {
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .car-cost {
+            font-weight: bold;
+            color: #ff5722;
+        }
+
+        .unlock-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .unlock-btn:hover {
+            background: #45a049;
+            transform: translateY(-1px);
+        }
+
+        /* Notification System */
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 4000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .notification {
+            background: white;
+            border-radius: 12px;
+            padding: 15px 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border-left: 5px solid #4CAF50;
+            animation: notificationSlideIn 0.5s ease-out;
+            max-width: 300px;
+            position: relative;
+        }
+
+        .notification.achievement {
+            border-left-color: #FFD700;
+            background: linear-gradient(135deg, #fff9c4, #fff);
+        }
+
+        .notification.powerup {
+            border-left-color: #667eea;
+            background: linear-gradient(135deg, #e8f0ff, #fff);
+        }
+
+        .notification.error {
+            border-left-color: #ff5722;
+            background: linear-gradient(135deg, #ffebee, #fff);
+        }
+
+        @keyframes notificationSlideIn {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .notification-icon {
+            font-size: 1.5rem;
+            margin-right: 10px;
+        }
+
+        .notification-content {
+            display: flex;
+            align-items: center;
+        }
+
+        .notification-text {
+            flex: 1;
+        }
+
+        .notification-title {
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+
+        .notification-description {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        /* Enhanced Game Over Screen */
+        .final-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .final-score, .final-xp, .final-coins, .final-streak {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .achievements-earned {
+            margin: 20px 0;
+            padding: 15px;
+            background: linear-gradient(135deg, #fff9c4, #fff);
+            border-radius: 10px;
+            border-left: 5px solid #FFD700;
+        }
+
+        .game-over-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .shop-btn, .garage-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .shop-btn:hover, .garage-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        /* Game Over Screen */
+        .game-over {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .game-over.show {
+            display: flex;
+        }
+
+        .game-over-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .game-over-title {
+            font-family: 'Fredoka One', cursive;
+            font-size: 2.5rem;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .final-score {
+            font-size: 1.5rem;
+            color: #667eea;
+            margin-bottom: 30px;
+        }
+
+        .restart-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .restart-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        /* Start Screen */
+        .start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .start-content {
+            text-align: center;
+            color: white;
+        }
+
+        .start-title {
+            font-family: 'Fredoka One', cursive;
+            font-size: 3rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .start-subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+
+        .start-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid white;
+            color: white;
+            border-radius: 25px;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .start-btn:hover {
+            background: white;
+            color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .game-title {
+                font-size: 1.5rem;
+            }
+            
+            .game-stats {
+                gap: 15px;
+            }
+            
+            .stat-value {
+                font-size: 1.2rem;
+            }
+            
+            .road {
+                width: 300px;
+            }
+            
+            .question-panel {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="navigation">
+        <a href="index.html" class="nav-btn">← Back to Home</a>
+    </div>
+
+    <div class="game-container">
+        <!-- Start Screen -->
+        <div class="start-screen" id="startScreen">
+            <div class="start-content">
+                <h1 class="start-title">🏁 Focus Racer</h1>
+                <p class="start-subtitle">Learn Python while racing! Answer questions to keep your car moving.</p>
+                <button class="start-btn" onclick="startGame()">Start Racing</button>
+            </div>
+        </div>
+
+        <!-- Enhanced Game Header with Super Stats -->
+        <div class="game-header">
+            <div class="game-title">🏁 Focus Racer SUPER</div>
+            <div class="game-stats">
+                <div class="stat-item">
+                    <div class="stat-label">Score</div>
+                    <div class="stat-value" id="score">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">XP</div>
+                    <div class="stat-value" id="xp">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Coins</div>
+                    <div class="stat-value" id="coins">💰 0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Streak</div>
+                    <div class="stat-value" id="streak">🔥 0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Level</div>
+                    <div class="stat-value" id="level">1</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Lives</div>
+                    <div class="stat-value" id="lives">❤️ 3</div>
+                </div>
+            </div>
+
+            <!-- Power-ups Bar -->
+            <div class="powerups-bar">
+                <button class="powerup-btn" id="shieldBtn" onclick="usePowerUp('shield')">
+                    🛡️ <span id="shieldCount">0</span>
+                </button>
+                <button class="powerup-btn" id="boostBtn" onclick="usePowerUp('boost')">
+                    🚀 <span id="boostCount">0</span>
+                </button>
+                <button class="powerup-btn" id="freezeBtn" onclick="usePowerUp('timeFreeze')">
+                    ❄️ <span id="freezeCount">0</span>
+                </button>
+                <button class="powerup-btn" id="doubleBtn" onclick="usePowerUp('doublePoints')">
+                    💎 <span id="doubleCount">0</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Game Area -->
+        <div class="game-area">
+            <div class="road"></div>
+            <div class="car" id="car"></div>
+        </div>
+
+        <!-- Enhanced Question Panel -->
+        <div class="question-panel" id="questionPanel">
+            <div class="question-header">
+                <h3 class="question-title">🐍 Python Challenge!</h3>
+                <div class="question-meta">
+                    <span class="category-badge" id="categoryBadge">Basics</span>
+                    <span class="difficulty-badge" id="difficultyBadge">Beginner</span>
+                    <span class="points-badge" id="pointsBadge">+10 XP</span>
+                </div>
+            </div>
+
+            <div class="question-content">
+                <div class="question-text" id="questionText"></div>
+                <div class="code-block" id="codeBlock" style="display: none;"></div>
+
+                <!-- Timer and Progress -->
+                <div class="question-timer">
+                    <div class="timer-bar">
+                        <div class="timer-fill" id="timerFill"></div>
+                    </div>
+                    <div class="timer-text" id="timerText">30s</div>
+                </div>
+
+                <div class="answer-options" id="answerOptions"></div>
+
+                <!-- Hint System -->
+                <div class="hint-section" id="hintSection" style="display: none;">
+                    <div class="hint-content" id="hintContent"></div>
+                    <button class="hint-btn" onclick="showHint()">💡 Get Hint (-10 coins)</button>
+                </div>
+
+                <!-- Explanation Panel -->
+                <div class="explanation-panel" id="explanationPanel" style="display: none;">
+                    <h4>📚 Explanation:</h4>
+                    <div class="explanation-text" id="explanationText"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enhanced Game Over Screen -->
+        <div class="game-over" id="gameOver">
+            <div class="game-over-content">
+                <h2 class="game-over-title">🏁 Race Complete!</h2>
+                <div class="final-stats">
+                    <div class="final-score" id="finalScore">Final Score: 0</div>
+                    <div class="final-xp" id="finalXP">XP Gained: 0</div>
+                    <div class="final-coins" id="finalCoins">Coins Earned: 0</div>
+                    <div class="final-streak" id="finalStreak">Best Streak: 0</div>
+                </div>
+                <div class="achievements-earned" id="achievementsEarned"></div>
+                <div class="game-over-actions">
+                    <button class="restart-btn" onclick="restartGame()">🔄 Race Again</button>
+                    <button class="shop-btn" onclick="openShop()">🛒 Shop</button>
+                    <button class="garage-btn" onclick="openGarage()">🚗 Garage</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notification System -->
+        <div class="notification-container" id="notificationContainer"></div>
+
+        <!-- Shop Modal -->
+        <div class="modal" id="shopModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>🛒 Power-Up Shop</h2>
+                    <button class="close-btn" onclick="closeModal('shopModal')">&times;</button>
+                </div>
+                <div class="shop-content">
+                    <div class="coins-display">💰 <span id="shopCoins">0</span> Coins</div>
+                    <div class="shop-items" id="shopItems"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Garage Modal -->
+        <div class="modal" id="garageModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>🚗 Car Garage</h2>
+                    <button class="close-btn" onclick="closeModal('garageModal')">&times;</button>
+                </div>
+                <div class="garage-content">
+                    <div class="car-selection" id="carSelection"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Achievements Modal -->
+        <div class="modal" id="achievementsModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>🏆 Achievements</h2>
+                    <button class="close-btn" onclick="closeModal('achievementsModal')">&times;</button>
+                </div>
+                <div class="achievements-content" id="achievementsContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Enhanced Game State with Super Features
+        let gameState = {
+            score: 0,
+            speed: 0,
+            level: 1,
+            isPlaying: false,
+            currentQuestion: 0,
+            obstacles: [],
+            carPosition: 0,
+            // NEW SUPER FEATURES
+            xp: 0,
+            coins: 0,
+            streak: 0,
+            maxStreak: 0,
+            powerUps: {
+                shield: 0,
+                boost: 0,
+                timeFreeze: 0,
+                doublePoints: 0
+            },
+            achievements: [],
+            unlockedCars: ['red'],
+            selectedCar: 'red',
+            difficulty: 'normal',
+            totalDistance: 0,
+            perfectAnswers: 0,
+            timeBonus: 0,
+            multiplier: 1,
+            combo: 0,
+            lives: 3,
+            energy: 100,
+            badges: [],
+            dailyStreak: 0,
+            weeklyGoals: {
+                questionsAnswered: 0,
+                perfectStreaks: 0,
+                coinsEarned: 0
+            }
+        };
+
+        // SUPER ENHANCED Python Questions Database with Categories & Difficulties
+        const questionDatabase = {
+            beginner: [
+                {
+                    category: "Basics",
+                    question: "What will this code output?",
+                    code: "print('Hello' + ' ' + 'World')",
+                    options: ["Hello World", "HelloWorld", "Hello + World", "Error"],
+                    correct: 0,
+                    points: 10,
+                    explanation: "String concatenation with + operator joins strings together."
+                },
+                {
+                    category: "Data Types",
+                    question: "Which data type is this?",
+                    code: "my_list = [1, 2, 3, 4, 5]",
+                    options: ["String", "List", "Dictionary", "Tuple"],
+                    correct: 1,
+                    points: 10,
+                    explanation: "Square brackets [] define a list in Python."
+                },
+                {
+                    category: "Functions",
+                    question: "What does this function return?",
+                    code: "def add_numbers(a, b):\n    return a + b\n\nresult = add_numbers(5, 3)",
+                    options: ["5", "3", "8", "53"],
+                    correct: 2,
+                    points: 15,
+                    explanation: "The function adds 5 + 3 = 8."
+                },
+                {
+                    category: "Syntax",
+                    question: "How do you create a comment in Python?",
+                    code: "",
+                    options: ["// This is a comment", "/* This is a comment */", "# This is a comment", "<!-- This is a comment -->"],
+                    correct: 2,
+                    points: 10,
+                    explanation: "Python uses # for single-line comments."
+                },
+                {
+                    category: "Loops",
+                    question: "What will this loop print?",
+                    code: "for i in range(3):\n    print(i)",
+                    options: ["1 2 3", "0 1 2", "1 2", "0 1 2 3"],
+                    correct: 1,
+                    points: 15,
+                    explanation: "range(3) generates numbers 0, 1, 2."
+                }
+            ],
+            intermediate: [
+                {
+                    category: "List Comprehensions",
+                    question: "What does this list comprehension create?",
+                    code: "squares = [x**2 for x in range(5)]",
+                    options: ["[0, 1, 4, 9, 16]", "[1, 4, 9, 16, 25]", "[0, 1, 2, 3, 4]", "Error"],
+                    correct: 0,
+                    points: 25,
+                    explanation: "List comprehension squares numbers 0-4: 0², 1², 2², 3², 4²."
+                },
+                {
+                    category: "Dictionaries",
+                    question: "How do you access the value 'Python' from this dictionary?",
+                    code: "languages = {'web': 'JavaScript', 'data': 'Python', 'mobile': 'Swift'}",
+                    options: ["languages['Python']", "languages.data", "languages['data']", "languages.get('Python')"],
+                    correct: 2,
+                    points: 20,
+                    explanation: "Use the key 'data' to access the value 'Python'."
+                },
+                {
+                    category: "Exception Handling",
+                    question: "What happens when this code runs with invalid input?",
+                    code: "try:\n    num = int(input())\nexcept ValueError:\n    print('Invalid!')",
+                    options: ["Program crashes", "Prints 'Invalid!'", "Returns None", "Infinite loop"],
+                    correct: 1,
+                    points: 30,
+                    explanation: "try-except catches ValueError and prints 'Invalid!' for non-numeric input."
+                }
+            ],
+            advanced: [
+                {
+                    category: "Decorators",
+                    question: "What does this decorator do?",
+                    code: "@property\ndef name(self):\n    return self._name",
+                    options: ["Creates a method", "Creates a property", "Creates a class", "Creates an error"],
+                    correct: 1,
+                    points: 50,
+                    explanation: "@property decorator makes a method accessible like an attribute."
+                },
+                {
+                    category: "Generators",
+                    question: "What's the difference between this and a regular function?",
+                    code: "def countdown(n):\n    while n > 0:\n        yield n\n        n -= 1",
+                    options: ["No difference", "Returns a generator", "Runs faster", "Uses less memory"],
+                    correct: 1,
+                    points: 45,
+                    explanation: "yield makes this a generator function that produces values lazily."
+                },
+                {
+                    category: "Lambda & Map",
+                    question: "What does this code produce?",
+                    code: "result = list(map(lambda x: x * 2, [1, 2, 3, 4]))",
+                    options: ["[1, 2, 3, 4]", "[2, 4, 6, 8]", "[1, 4, 9, 16]", "Error"],
+                    correct: 1,
+                    points: 40,
+                    explanation: "map applies lambda x: x * 2 to each element, doubling them."
+                }
+            ],
+            expert: [
+                {
+                    category: "Metaclasses",
+                    question: "What is the metaclass of this class?",
+                    code: "class MyClass(type):\n    pass\n\nclass Example(metaclass=MyClass):\n    pass",
+                    options: ["type", "MyClass", "Example", "object"],
+                    correct: 1,
+                    points: 75,
+                    explanation: "MyClass is explicitly set as the metaclass for Example."
+                },
+                {
+                    category: "Async/Await",
+                    question: "What does 'await' do in this context?",
+                    code: "async def fetch_data():\n    result = await api_call()\n    return result",
+                    options: ["Blocks execution", "Pauses until completion", "Runs in parallel", "Creates a thread"],
+                    correct: 1,
+                    points: 70,
+                    explanation: "await pauses execution until the async operation completes."
+                }
+            ]
+        };
+
+        // SUPER ACHIEVEMENTS SYSTEM
+        const achievementSystem = {
+            achievements: [
+                { id: 'first_win', name: 'First Victory', description: 'Complete your first race', icon: '🏆', points: 50, unlocked: false },
+                { id: 'speed_demon', name: 'Speed Demon', description: 'Reach maximum speed', icon: '⚡', points: 100, unlocked: false },
+                { id: 'perfect_streak', name: 'Perfect Streak', description: 'Answer 10 questions correctly in a row', icon: '🔥', points: 200, unlocked: false },
+                { id: 'python_master', name: 'Python Master', description: 'Answer 100 Python questions', icon: '🐍', points: 500, unlocked: false },
+                { id: 'coin_collector', name: 'Coin Collector', description: 'Collect 1000 coins', icon: '💰', points: 300, unlocked: false },
+                { id: 'level_up', name: 'Level Up', description: 'Reach level 10', icon: '📈', points: 400, unlocked: false },
+                { id: 'power_user', name: 'Power User', description: 'Use 50 power-ups', icon: '⭐', points: 250, unlocked: false },
+                { id: 'daily_warrior', name: 'Daily Warrior', description: 'Play for 7 consecutive days', icon: '📅', points: 600, unlocked: false }
+            ],
+            checkAchievement: function(id) {
+                const achievement = this.achievements.find(a => a.id === id);
+                if (achievement && !achievement.unlocked) {
+                    achievement.unlocked = true;
+                    gameState.achievements.push(achievement);
+                    showAchievementNotification(achievement);
+                    gameState.xp += achievement.points;
+                    return true;
+                }
+                return false;
+            }
+        };
+
+        // POWER-UPS SYSTEM
+        const powerUpSystem = {
+            types: {
+                shield: { name: 'Shield', icon: '🛡️', duration: 10000, cost: 50, description: 'Protects from wrong answers' },
+                boost: { name: 'Speed Boost', icon: '🚀', duration: 8000, cost: 30, description: 'Doubles your speed temporarily' },
+                timeFreeze: { name: 'Time Freeze', icon: '❄️', duration: 5000, cost: 75, description: 'Freezes the timer' },
+                doublePoints: { name: 'Double Points', icon: '💎', duration: 15000, cost: 100, description: 'Doubles all points earned' }
+            },
+            active: {},
+            activate: function(type) {
+                if (gameState.coins >= this.types[type].cost) {
+                    gameState.coins -= this.types[type].cost;
+                    this.active[type] = Date.now() + this.types[type].duration;
+                    showPowerUpNotification(this.types[type]);
+                    return true;
+                }
+                return false;
+            },
+            isActive: function(type) {
+                return this.active[type] && Date.now() < this.active[type];
+            }
+        };
+
+        // CAR CUSTOMIZATION SYSTEM
+        const carSystem = {
+            cars: {
+                red: { name: 'Classic Red', color: '#FF4444', speed: 1.0, cost: 0, unlocked: true },
+                blue: { name: 'Ocean Blue', color: '#4444FF', speed: 1.1, cost: 500, unlocked: false },
+                green: { name: 'Forest Green', color: '#44FF44', speed: 1.2, cost: 1000, unlocked: false },
+                purple: { name: 'Royal Purple', color: '#8844FF', speed: 1.3, cost: 2000, unlocked: false },
+                gold: { name: 'Golden Beast', color: '#FFD700', speed: 1.5, cost: 5000, unlocked: false },
+                rainbow: { name: 'Rainbow Racer', color: 'linear-gradient(45deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3)', speed: 2.0, cost: 10000, unlocked: false }
+            },
+            unlock: function(carId) {
+                const car = this.cars[carId];
+                if (car && gameState.coins >= car.cost && !car.unlocked) {
+                    gameState.coins -= car.cost;
+                    car.unlocked = true;
+                    gameState.unlockedCars.push(carId);
+                    showCarUnlockNotification(car);
+                    return true;
+                }
+                return false;
+            }
+        };
+
+        // Enhanced DOM elements
+        const startScreen = document.getElementById('startScreen');
+        const questionPanel = document.getElementById('questionPanel');
+        const gameOver = document.getElementById('gameOver');
+        const scoreElement = document.getElementById('score');
+        const xpElement = document.getElementById('xp');
+        const coinsElement = document.getElementById('coins');
+        const streakElement = document.getElementById('streak');
+        const levelElement = document.getElementById('level');
+        const livesElement = document.getElementById('lives');
+        const car = document.getElementById('car');
+        const questionText = document.getElementById('questionText');
+        const codeBlock = document.getElementById('codeBlock');
+        const answerOptions = document.getElementById('answerOptions');
+        const finalScore = document.getElementById('finalScore');
+        const categoryBadge = document.getElementById('categoryBadge');
+        const difficultyBadge = document.getElementById('difficultyBadge');
+        const pointsBadge = document.getElementById('pointsBadge');
+        const timerFill = document.getElementById('timerFill');
+        const timerText = document.getElementById('timerText');
+        const explanationPanel = document.getElementById('explanationPanel');
+        const explanationText = document.getElementById('explanationText');
+        const notificationContainer = document.getElementById('notificationContainer');
+
+        // Game timing variables
+        let questionTimer = null;
+        let questionTimeLeft = 30;
+        let currentDifficulty = 'beginner';
+        let currentQuestions = [];
+        let questionStartTime = 0;
+
+        function startGame() {
+            startScreen.style.display = 'none';
+            gameState.isPlaying = true;
+            gameState.score = 0;
+            gameState.speed = 1;
+            gameState.level = 1;
+            gameState.currentQuestion = 0;
+            gameState.streak = 0;
+            gameState.combo = 0;
+            gameState.lives = 3;
+            gameState.energy = 100;
+            gameState.multiplier = 1;
+
+            // Load saved progress
+            loadGameProgress();
+
+            // Set difficulty based on level
+            setDifficulty();
+
+            // Initialize UI
+            updateUI();
+            updatePowerUpCounts();
+
+            // Start the first question
+            showQuestion();
+
+            // Show welcome notification
+            showNotification('🏁 Race Started!', 'Answer questions correctly to maintain speed!', 'info');
+        }
+
+        function setDifficulty() {
+            if (gameState.level <= 3) {
+                currentDifficulty = 'beginner';
+            } else if (gameState.level <= 7) {
+                currentDifficulty = 'intermediate';
+            } else if (gameState.level <= 12) {
+                currentDifficulty = 'advanced';
+            } else {
+                currentDifficulty = 'expert';
+            }
+
+            currentQuestions = questionDatabase[currentDifficulty];
+        }
+
+        function loadGameProgress() {
+            const saved = localStorage.getItem('focusRacerProgress');
+            if (saved) {
+                const progress = JSON.parse(saved);
+                gameState.xp = progress.xp || 0;
+                gameState.coins = progress.coins || 0;
+                gameState.achievements = progress.achievements || [];
+                gameState.unlockedCars = progress.unlockedCars || ['red'];
+                gameState.selectedCar = progress.selectedCar || 'red';
+                gameState.powerUps = progress.powerUps || {shield: 0, boost: 0, timeFreeze: 0, doublePoints: 0};
+                gameState.maxStreak = progress.maxStreak || 0;
+                gameState.dailyStreak = progress.dailyStreak || 0;
+            }
+        }
+
+        function saveGameProgress() {
+            const progress = {
+                xp: gameState.xp,
+                coins: gameState.coins,
+                achievements: gameState.achievements,
+                unlockedCars: gameState.unlockedCars,
+                selectedCar: gameState.selectedCar,
+                powerUps: gameState.powerUps,
+                maxStreak: gameState.maxStreak,
+                dailyStreak: gameState.dailyStreak,
+                lastPlayed: Date.now()
+            };
+            localStorage.setItem('focusRacerProgress', JSON.stringify(progress));
+        }
+
+        function showQuestion() {
+            if (gameState.currentQuestion >= currentQuestions.length) {
+                gameState.currentQuestion = 0; // Reset to beginning
+                gameState.level++;
+                setDifficulty(); // Update difficulty for new level
+
+                // Level up rewards
+                const levelBonus = gameState.level * 50;
+                gameState.xp += levelBonus;
+                gameState.coins += Math.floor(levelBonus / 5);
+
+                showNotification('🎉 Level Up!', `Level ${gameState.level} reached! Bonus: ${levelBonus} XP`, 'achievement');
+
+                // Check for level achievements
+                if (gameState.level === 10) {
+                    achievementSystem.checkAchievement('level_up');
+                }
+
+                updateUI();
+            }
+
+            const question = currentQuestions[gameState.currentQuestion];
+            questionText.textContent = question.question;
+
+            // Update question metadata
+            categoryBadge.textContent = question.category;
+            difficultyBadge.textContent = currentDifficulty.charAt(0).toUpperCase() + currentDifficulty.slice(1);
+            pointsBadge.textContent = `+${question.points} XP`;
+
+            if (question.code) {
+                codeBlock.textContent = question.code;
+                codeBlock.style.display = 'block';
+            } else {
+                codeBlock.style.display = 'none';
+            }
+
+            // Create answer options with enhanced styling
+            answerOptions.innerHTML = '';
+            question.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = 'answer-btn';
+                button.textContent = `${String.fromCharCode(65 + index)}. ${option}`;
+                button.onclick = () => selectAnswer(index);
+                answerOptions.appendChild(button);
+            });
+
+            // Hide explanation panel
+            explanationPanel.style.display = 'none';
+
+            // Start question timer
+            startQuestionTimer();
+
+            questionPanel.classList.add('show');
+            questionStartTime = Date.now();
+        }
+
+        function startQuestionTimer() {
+            questionTimeLeft = 30;
+            timerText.textContent = `${questionTimeLeft}s`;
+            timerFill.style.width = '100%';
+
+            if (questionTimer) clearInterval(questionTimer);
+
+            questionTimer = setInterval(() => {
+                questionTimeLeft--;
+                timerText.textContent = `${questionTimeLeft}s`;
+                timerFill.style.width = `${(questionTimeLeft / 30) * 100}%`;
+
+                // Change color based on time left
+                if (questionTimeLeft <= 5) {
+                    timerFill.style.background = '#FF5722';
+                } else if (questionTimeLeft <= 10) {
+                    timerFill.style.background = '#FFC107';
+                } else {
+                    timerFill.style.background = 'linear-gradient(90deg, #4CAF50, #FFC107, #FF5722)';
+                }
+
+                if (questionTimeLeft <= 0) {
+                    clearInterval(questionTimer);
+                    selectAnswer(-1); // Time's up - wrong answer
+                }
+            }, 1000);
+        }
+
+        function selectAnswer(selectedIndex) {
+            if (questionTimer) {
+                clearInterval(questionTimer);
+                questionTimer = null;
+            }
+
+            const question = currentQuestions[gameState.currentQuestion];
+            const buttons = answerOptions.querySelectorAll('.answer-btn');
+            const responseTime = Date.now() - questionStartTime;
+            const isCorrect = selectedIndex === question.correct;
+            const isTimeout = selectedIndex === -1;
+
+            // Visual feedback
+            buttons.forEach((button, index) => {
+                if (index === question.correct) {
+                    button.classList.add('correct');
+                } else if (index === selectedIndex && !isCorrect) {
+                    button.classList.add('incorrect');
+                }
+                button.disabled = true;
+            });
+
+            // Show explanation
+            explanationText.textContent = question.explanation;
+            explanationPanel.style.display = 'block';
+
+            // Calculate points and bonuses
+            let pointsEarned = 0;
+            let coinsEarned = 0;
+            let xpEarned = 0;
+
+            if (isCorrect) {
+                // Base points
+                pointsEarned = question.points * gameState.level;
+                xpEarned = question.points;
+                coinsEarned = Math.floor(question.points / 2);
+
+                // Time bonus (faster = more points)
+                const timeBonus = Math.max(0, Math.floor((30 - responseTime / 1000) * 2));
+                pointsEarned += timeBonus;
+                xpEarned += timeBonus;
+
+                // Streak bonus
+                gameState.streak++;
+                if (gameState.streak > 1) {
+                    const streakBonus = gameState.streak * 5;
+                    pointsEarned += streakBonus;
+                    xpEarned += streakBonus;
+                }
+
+                // Combo multiplier
+                gameState.combo++;
+                if (gameState.combo >= 3) {
+                    gameState.multiplier = Math.min(gameState.multiplier + 0.1, 3.0);
+                }
+
+                // Apply power-up bonuses
+                if (powerUpSystem.isActive('doublePoints')) {
+                    pointsEarned *= 2;
+                    xpEarned *= 2;
+                    coinsEarned *= 2;
+                }
+
+                // Apply multiplier
+                pointsEarned = Math.floor(pointsEarned * gameState.multiplier);
+                xpEarned = Math.floor(xpEarned * gameState.multiplier);
+
+                // Update game state
+                gameState.score += pointsEarned;
+                gameState.xp += xpEarned;
+                gameState.coins += coinsEarned;
+                gameState.speed = Math.min(gameState.speed + 0.5, 10);
+                gameState.perfectAnswers++;
+
+                // Update max streak
+                if (gameState.streak > gameState.maxStreak) {
+                    gameState.maxStreak = gameState.streak;
+                }
+
+                // Check achievements
+                checkAnswerAchievements();
+
+                // Visual feedback
+                moveCar();
+                showPointsAnimation(pointsEarned, xpEarned, coinsEarned);
+
+                // Streak notifications
+                if (gameState.streak === 5) {
+                    showNotification('🔥 Hot Streak!', '5 correct answers in a row!', 'achievement');
+                } else if (gameState.streak === 10) {
+                    showNotification('🔥 Perfect Streak!', '10 correct answers! Amazing!', 'achievement');
+                    achievementSystem.checkAchievement('perfect_streak');
+                }
+
+            } else {
+                // Wrong answer or timeout
+                gameState.streak = 0;
+                gameState.combo = 0;
+                gameState.multiplier = 1.0;
+
+                if (!powerUpSystem.isActive('shield')) {
+                    gameState.lives--;
+                    gameState.speed = Math.max(gameState.speed - 1, 0);
+
+                    if (gameState.lives <= 0 || gameState.speed === 0) {
+                        endGame();
+                        return;
+                    }
+
+                    showNotification('❌ Wrong Answer!', isTimeout ? 'Time\'s up!' : 'Try again!', 'error');
+                } else {
+                    showNotification('🛡️ Shield Protected!', 'No penalty thanks to your shield!', 'powerup');
+                }
+            }
+
+            gameState.currentQuestion++;
+            updateUI();
+            saveGameProgress();
+
+            setTimeout(() => {
+                questionPanel.classList.remove('show');
+
+                setTimeout(() => {
+                    if (gameState.isPlaying) {
+                        showQuestion();
+                    }
+                }, 1000);
+            }, 2500);
+        }
+
+        function checkAnswerAchievements() {
+            // Check various achievements
+            if (gameState.perfectAnswers >= 100) {
+                achievementSystem.checkAchievement('python_master');
+            }
+
+            if (gameState.coins >= 1000) {
+                achievementSystem.checkAchievement('coin_collector');
+            }
+
+            if (gameState.speed >= 10) {
+                achievementSystem.checkAchievement('speed_demon');
+            }
+        }
+
+        function moveCar() {
+            car.style.transform = `translateX(-50%) translateY(-20px)`;
+            setTimeout(() => {
+                car.style.transform = `translateX(-50%)`;
+            }, 300);
+        }
+
+        function updateUI() {
+            scoreElement.textContent = gameState.score.toLocaleString();
+            xpElement.textContent = gameState.xp.toLocaleString();
+            coinsElement.textContent = `💰 ${gameState.coins.toLocaleString()}`;
+            streakElement.textContent = `🔥 ${gameState.streak}`;
+            levelElement.textContent = gameState.level;
+            livesElement.textContent = `❤️ ${gameState.lives}`;
+        }
+
+        function updatePowerUpCounts() {
+            document.getElementById('shieldCount').textContent = gameState.powerUps.shield;
+            document.getElementById('boostCount').textContent = gameState.powerUps.boost;
+            document.getElementById('freezeCount').textContent = gameState.powerUps.timeFreeze;
+            document.getElementById('doubleCount').textContent = gameState.powerUps.doublePoints;
+        }
+
+        function showNotification(title, message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+
+            const icons = {
+                info: 'ℹ️',
+                achievement: '🏆',
+                powerup: '⭐',
+                error: '❌'
+            };
+
+            notification.innerHTML = `
+                <div class="notification-content">
+                    <div class="notification-icon">${icons[type]}</div>
+                    <div class="notification-text">
+                        <div class="notification-title">${title}</div>
+                        <div class="notification-description">${message}</div>
+                    </div>
+                </div>
+            `;
+
+            notificationContainer.appendChild(notification);
+
+            // Auto remove after 4 seconds
+            setTimeout(() => {
+                notification.style.animation = 'notificationSlideIn 0.5s ease-out reverse';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 500);
+            }, 4000);
+        }
+
+        function showPointsAnimation(points, xp, coins) {
+            const animation = document.createElement('div');
+            animation.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                font-size: 2rem;
+                font-weight: bold;
+                color: #4CAF50;
+                z-index: 5000;
+                pointer-events: none;
+                animation: pointsFloat 2s ease-out forwards;
+            `;
+            animation.textContent = `+${points} pts | +${xp} XP | +${coins} coins`;
+
+            document.body.appendChild(animation);
+
+            setTimeout(() => {
+                if (animation.parentNode) {
+                    animation.parentNode.removeChild(animation);
+                }
+            }, 2000);
+        }
+
+        function showAchievementNotification(achievement) {
+            showNotification(
+                `🏆 ${achievement.name}`,
+                `${achievement.description} (+${achievement.points} XP)`,
+                'achievement'
+            );
+        }
+
+        function showPowerUpNotification(powerUp) {
+            showNotification(
+                `⭐ ${powerUp.name} Activated!`,
+                powerUp.description,
+                'powerup'
+            );
+        }
+
+        function showCarUnlockNotification(car) {
+            showNotification(
+                `🚗 New Car Unlocked!`,
+                `${car.name} is now available in your garage!`,
+                'achievement'
+            );
+        }
+
+        function usePowerUp(type) {
+            if (gameState.powerUps[type] > 0 && !powerUpSystem.isActive(type)) {
+                gameState.powerUps[type]--;
+                powerUpSystem.activate(type);
+                updatePowerUpCounts();
+                saveGameProgress();
+
+                // Check power-up achievement
+                const totalUsed = Object.values(gameState.powerUps).reduce((a, b) => a + b, 0);
+                if (totalUsed >= 50) {
+                    achievementSystem.checkAchievement('power_user');
+                }
+            }
+        }
+
+        function endGame() {
+            gameState.isPlaying = false;
+            questionPanel.classList.remove('show');
+
+            if (questionTimer) {
+                clearInterval(questionTimer);
+                questionTimer = null;
+            }
+
+            // Update final stats
+            document.getElementById('finalScore').textContent = `Final Score: ${gameState.score.toLocaleString()}`;
+            document.getElementById('finalXP').textContent = `XP Gained: ${gameState.xp.toLocaleString()}`;
+            document.getElementById('finalCoins').textContent = `Coins Earned: ${gameState.coins.toLocaleString()}`;
+            document.getElementById('finalStreak').textContent = `Best Streak: ${gameState.maxStreak}`;
+
+            // Show achievements earned this session
+            const achievementsEarned = document.getElementById('achievementsEarned');
+            if (gameState.achievements.length > 0) {
+                achievementsEarned.innerHTML = `
+                    <h4>🏆 Achievements Earned:</h4>
+                    ${gameState.achievements.map(a => `<div>${a.icon} ${a.name}</div>`).join('')}
+                `;
+            } else {
+                achievementsEarned.innerHTML = '';
+            }
+
+            // Check first win achievement
+            achievementSystem.checkAchievement('first_win');
+
+            saveGameProgress();
+            gameOver.classList.add('show');
+        }
+
+        function openShop() {
+            const modal = document.getElementById('shopModal');
+            const shopItems = document.getElementById('shopItems');
+            const shopCoins = document.getElementById('shopCoins');
+
+            shopCoins.textContent = gameState.coins.toLocaleString();
+
+            shopItems.innerHTML = '';
+            Object.entries(powerUpSystem.types).forEach(([key, powerUp]) => {
+                const item = document.createElement('div');
+                item.className = `shop-item ${gameState.coins >= powerUp.cost ? 'affordable' : 'expensive'}`;
+                item.innerHTML = `
+                    <div class="item-icon">${powerUp.icon}</div>
+                    <div class="item-name">${powerUp.name}</div>
+                    <div class="item-description">${powerUp.description}</div>
+                    <div class="item-cost">💰 ${powerUp.cost}</div>
+                `;
+
+                if (gameState.coins >= powerUp.cost) {
+                    item.onclick = () => buyPowerUp(key);
+                }
+
+                shopItems.appendChild(item);
+            });
+
+            modal.classList.add('show');
+        }
+
+        function buyPowerUp(type) {
+            const powerUp = powerUpSystem.types[type];
+            if (gameState.coins >= powerUp.cost) {
+                gameState.coins -= powerUp.cost;
+                gameState.powerUps[type]++;
+
+                showNotification('🛒 Purchase Successful!', `${powerUp.name} added to inventory!`, 'info');
+                updatePowerUpCounts();
+                saveGameProgress();
+
+                // Refresh shop display
+                openShop();
+            }
+        }
+
+        function openGarage() {
+            const modal = document.getElementById('garageModal');
+            const carSelection = document.getElementById('carSelection');
+
+            carSelection.innerHTML = '';
+            Object.entries(carSystem.cars).forEach(([key, car]) => {
+                const item = document.createElement('div');
+                item.className = `car-item ${gameState.selectedCar === key ? 'selected' : ''} ${!car.unlocked ? 'locked' : ''}`;
+
+                item.innerHTML = `
+                    <div class="car-preview" style="background: ${car.color}"></div>
+                    <div class="car-name">${car.name}</div>
+                    <div class="car-stats">Speed: ${car.speed}x</div>
+                    ${!car.unlocked ? `
+                        <div class="car-cost">💰 ${car.cost}</div>
+                        <button class="unlock-btn" onclick="unlockCar('${key}')" ${gameState.coins < car.cost ? 'disabled' : ''}>
+                            Unlock
+                        </button>
+                    ` : `
+                        <button class="unlock-btn" onclick="selectCar('${key}')" ${gameState.selectedCar === key ? 'disabled' : ''}>
+                            ${gameState.selectedCar === key ? 'Selected' : 'Select'}
+                        </button>
+                    `}
+                `;
+
+                carSelection.appendChild(item);
+            });
+
+            modal.classList.add('show');
+        }
+
+        function unlockCar(carId) {
+            if (carSystem.unlock(carId)) {
+                showNotification('🚗 Car Unlocked!', `${carSystem.cars[carId].name} is now available!`, 'achievement');
+                updateUI();
+                saveGameProgress();
+                openGarage(); // Refresh garage display
+            }
+        }
+
+        function selectCar(carId) {
+            if (carSystem.cars[carId].unlocked) {
+                gameState.selectedCar = carId;
+                car.style.background = carSystem.cars[carId].color;
+                saveGameProgress();
+                openGarage(); // Refresh garage display
+            }
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        function restartGame() {
+            gameOver.classList.remove('show');
+            startScreen.style.display = 'flex';
+
+            // Reset game state but keep progress
+            const savedProgress = {
+                xp: gameState.xp,
+                coins: gameState.coins,
+                achievements: gameState.achievements,
+                unlockedCars: gameState.unlockedCars,
+                selectedCar: gameState.selectedCar,
+                powerUps: gameState.powerUps,
+                maxStreak: gameState.maxStreak,
+                dailyStreak: gameState.dailyStreak
+            };
+
+            gameState = {
+                score: 0,
+                speed: 1,
+                level: 1,
+                isPlaying: false,
+                currentQuestion: 0,
+                obstacles: [],
+                carPosition: 0,
+                streak: 0,
+                combo: 0,
+                lives: 3,
+                energy: 100,
+                multiplier: 1,
+                perfectAnswers: 0,
+                timeBonus: 0,
+                totalDistance: 0,
+                badges: [],
+                weeklyGoals: {
+                    questionsAnswered: 0,
+                    perfectStreaks: 0,
+                    coinsEarned: 0
+                },
+                ...savedProgress
+            };
+
+            updateUI();
+            updatePowerUpCounts();
+        }
+
+        function showHint() {
+            if (gameState.coins >= 10) {
+                gameState.coins -= 10;
+                const question = currentQuestions[gameState.currentQuestion];
+
+                // Generate a helpful hint
+                const hints = [
+                    "Think about the basic syntax rules.",
+                    "Consider what each part of the code does step by step.",
+                    "Remember Python's data types and their behaviors.",
+                    "Look at the variable names and their values.",
+                    "Think about the order of operations."
+                ];
+
+                const hintContent = document.getElementById('hintContent');
+                hintContent.textContent = hints[Math.floor(Math.random() * hints.length)];
+                document.getElementById('hintSection').style.display = 'block';
+
+                updateUI();
+                saveGameProgress();
+            } else {
+                showNotification('💰 Not Enough Coins!', 'You need 10 coins to get a hint.', 'error');
+            }
+        }
+
+        // Add CSS animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes pointsFloat {
+                0% {
+                    opacity: 1;
+                    transform: translate(-50%, -50%) scale(1);
+                }
+                50% {
+                    transform: translate(-50%, -70%) scale(1.2);
+                }
+                100% {
+                    opacity: 0;
+                    transform: translate(-50%, -90%) scale(0.8);
+                }
+            }
+
+            @keyframes carBoost {
+                0% { transform: translateX(-50%) scale(1); }
+                50% { transform: translateX(-50%) scale(1.1) translateY(-10px); }
+                100% { transform: translateX(-50%) scale(1); }
+            }
+
+            .car.boosted {
+                animation: carBoost 0.5s ease-out;
+            }
+
+            .powerup-active {
+                box-shadow: 0 0 20px #4CAF50;
+                animation: pulse 1s infinite;
+            }
+
+            @keyframes pulse {
+                0% { box-shadow: 0 0 20px #4CAF50; }
+                50% { box-shadow: 0 0 30px #4CAF50; }
+                100% { box-shadow: 0 0 20px #4CAF50; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Enhanced Keyboard controls
+        document.addEventListener('keydown', (event) => {
+            if (!gameState.isPlaying) return;
+
+            switch(event.key) {
+                case 'ArrowLeft':
+                    gameState.carPosition = Math.max(gameState.carPosition - 1, -1);
+                    car.style.left = `calc(50% + ${gameState.carPosition * 50}px)`;
+                    break;
+                case 'ArrowRight':
+                    gameState.carPosition = Math.min(gameState.carPosition + 1, 1);
+                    car.style.left = `calc(50% + ${gameState.carPosition * 50}px)`;
+                    break;
+                case ' ':
+                    event.preventDefault();
+                    usePowerUp('boost'); // Space bar activates boost
+                    break;
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                    event.preventDefault();
+                    const answerIndex = parseInt(event.key) - 1;
+                    const buttons = answerOptions.querySelectorAll('.answer-btn');
+                    if (buttons[answerIndex] && !buttons[answerIndex].disabled) {
+                        selectAnswer(answerIndex);
+                    }
+                    break;
+                case 'h':
+                case 'H':
+                    event.preventDefault();
+                    showHint();
+                    break;
+                case 's':
+                case 'S':
+                    event.preventDefault();
+                    if (!gameState.isPlaying) openShop();
+                    break;
+                case 'g':
+                case 'G':
+                    event.preventDefault();
+                    if (!gameState.isPlaying) openGarage();
+                    break;
+            }
+        });
+
+        // Close modals with Escape key
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                const modals = document.querySelectorAll('.modal.show');
+                modals.forEach(modal => modal.classList.remove('show'));
+            }
+        });
+
+        // Initialize enhanced game
+        document.addEventListener('DOMContentLoaded', function() {
+            loadGameProgress();
+            updateUI();
+            updatePowerUpCounts();
+
+            // Apply selected car
+            if (gameState.selectedCar && carSystem.cars[gameState.selectedCar]) {
+                car.style.background = carSystem.cars[gameState.selectedCar].color;
+            }
+
+            // Welcome message
+            showNotification('🏁 Welcome to Focus Racer SUPER!', 'Answer Python questions to race and earn rewards!', 'info');
+
+            console.log('🎮 Focus Racer SUPER Loaded!');
+            console.log('🎯 Use number keys 1-4 to select answers');
+            console.log('🚀 Press SPACE for boost power-up');
+            console.log('💡 Press H for hints');
+            console.log('🛒 Press S to open shop');
+            console.log('🚗 Press G to open garage');
+        });
+    </script>
+</body>
+</html>

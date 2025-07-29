@@ -1,0 +1,27 @@
+User-agent: *
+Allow: /
+
+# Main pages
+Allow: /index.html
+Allow: /attention-detection.html
+Allow: /focus-racer.html
+Allow: /game.html
+Allow: /loading.html
+Allow: /blind.html
+Allow: /deaf.html
+Allow: /dyslexic.html
+Allow: /dyslexicgame.html
+
+# CSS and assets
+Allow: /main.css
+Allow: /style.css
+Allow: /styles.css
+
+# Disallow error pages from indexing
+Disallow: /404.html
+
+# Sitemap location (when deployed)
+Sitemap: https://your-domain.com/sitemap.xml
+
+# Crawl delay (optional - helps prevent overwhelming the server)
+Crawl-delay: 1

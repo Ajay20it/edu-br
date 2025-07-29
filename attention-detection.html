@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attention Detection - EduBridge Smart Learning Platform</title>
+
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="AI-powered attention detection system for enhanced learning experience. Monitor focus levels and improve learning outcomes with real-time feedback.">
+    <meta name="keywords" content="attention detection, AI learning, focus monitoring, educational technology, smart learning">
+    <meta name="author" content="EduBridge Team">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>">
+
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#667eea">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Floating particles background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 2px, transparent 2px),
+                radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 2px, transparent 2px),
+                radial-gradient(circle at 40% 40%, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 100px 100px, 150px 150px, 80px 80px;
+            animation: floatParticles 20s linear infinite;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        @keyframes floatParticles {
+            0% { transform: translateY(0px) rotate(0deg); }
+            100% { transform: translateY(-100px) rotate(360deg); }
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-container {
+            display: flex;
+            gap: 30px;
+            max-width: 1400px;
+            width: 100%;
+            align-items: flex-start;
+        }
+
+        .video-section {
+            flex: 2;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 25px;
+            box-shadow:
+                0 25px 50px rgba(0,0,0,0.15),
+                0 0 0 1px rgba(255,255,255,0.2),
+                inset 0 1px 0 rgba(255,255,255,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .video-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent 49%, rgba(255,255,255,0.1) 50%, transparent 51%);
+            background-size: 20px 20px;
+            animation: shimmer 3s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .video-container {
+            position: relative;
+            background: #000;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+
+        #video {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 15px;
+        }
+
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .video-overlay.show {
+            opacity: 1;
+        }
+
+        .overlay-text {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            text-align: center;
+            padding: 20px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 10px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+            box-shadow: 0 8px 20px rgba(240, 147, 251, 0.3);
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(240, 147, 251, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: white;
+            box-shadow: 0 8px 20px rgba(79, 172, 254, 0.3);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(79, 172, 254, 0.4);
+        }
+
+        .stats-section {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 25px;
+            box-shadow:
+                0 25px 50px rgba(0,0,0,0.15),
+                0 0 0 1px rgba(255,255,255,0.2),
+                inset 0 1px 0 rgba(255,255,255,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stats-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(-45deg, transparent 49%, rgba(255,255,255,0.1) 50%, transparent 51%);
+            background-size: 20px 20px;
+            animation: shimmerReverse 3s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes shimmerReverse {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+
+        .stats-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            text-align: center;
+        }
+
+        .stat-item {
+            background: linear-gradient(135deg, #f8f9ff, #e8f0ff);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 5px solid #667eea;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-item:hover {
+            transform: translateX(5px);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .attention-indicator {
+            width: 100%;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .attention-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #feca57, #48dbfb, #0abde3);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+            width: 0%;
+        }
+
+        .navigation {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50px;
+            padding: 10px 20px;
+            color: #333;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .nav-btn:hover {
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .controls {
+                gap: 10px;
+            }
+            
+            .btn {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="navigation">
+        <a href="index.html" class="nav-btn">← Back to Home</a>
+    </div>
+
+    <div class="header">
+        <h1>🎯 Smart Learning with Attention Detection</h1>
+        <p>AI-powered focus monitoring for enhanced learning experience</p>
+    </div>
+
+    <div class="main-container">
+        <div class="video-section">
+            <div class="video-container">
+                <video id="video" autoplay muted playsinline></video>
+                <div class="video-overlay" id="videoOverlay">
+                    <div class="overlay-text" id="overlayText">Click "Start Camera" to begin</div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button class="btn btn-primary" id="startBtn">Start Camera</button>
+                <button class="btn btn-secondary" id="stopBtn" disabled>Stop Camera</button>
+                <button class="btn btn-success" id="captureBtn" disabled>Capture Focus</button>
+            </div>
+        </div>
+
+        <div class="stats-section">
+            <h2>📊 Attention Analytics</h2>
+            
+            <div class="stat-item">
+                <div class="stat-label">Current Focus Level</div>
+                <div class="stat-value" id="focusLevel">0%</div>
+                <div class="attention-indicator">
+                    <div class="attention-bar" id="attentionBar"></div>
+                </div>
+            </div>
+            
+            <div class="stat-item">
+                <div class="stat-label">Session Duration</div>
+                <div class="stat-value" id="sessionTime">00:00</div>
+            </div>
+            
+            <div class="stat-item">
+                <div class="stat-label">Average Attention</div>
+                <div class="stat-value" id="avgAttention">0%</div>
+            </div>
+            
+            <div class="stat-item">
+                <div class="stat-label">Focus Breaks</div>
+                <div class="stat-value" id="focusBreaks">0</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let video, startBtn, stopBtn, captureBtn, videoOverlay, overlayText;
+        let focusLevel, sessionTime, avgAttention, focusBreaks, attentionBar;
+        let stream = null;
+        let sessionStartTime = null;
+        let focusData = [];
+        let breakCount = 0;
+        let sessionInterval = null;
+
+        // Initialize elements
+        document.addEventListener('DOMContentLoaded', function() {
+            video = document.getElementById('video');
+            startBtn = document.getElementById('startBtn');
+            stopBtn = document.getElementById('stopBtn');
+            captureBtn = document.getElementById('captureBtn');
+            videoOverlay = document.getElementById('videoOverlay');
+            overlayText = document.getElementById('overlayText');
+
+            focusLevel = document.getElementById('focusLevel');
+            sessionTime = document.getElementById('sessionTime');
+            avgAttention = document.getElementById('avgAttention');
+            focusBreaks = document.getElementById('focusBreaks');
+            attentionBar = document.getElementById('attentionBar');
+
+            // Show overlay initially
+            videoOverlay.classList.add('show');
+
+            // Event listeners
+            startBtn.addEventListener('click', startCamera);
+            stopBtn.addEventListener('click', stopCamera);
+            captureBtn.addEventListener('click', captureFocus);
+        });
+
+        async function startCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
+                });
+
+                video.srcObject = stream;
+
+                // Hide overlay and update UI
+                videoOverlay.classList.remove('show');
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+                captureBtn.disabled = false;
+
+                // Start session tracking
+                sessionStartTime = Date.now();
+                startSessionTimer();
+                startFocusSimulation();
+
+            } catch (error) {
+                console.error('Error accessing camera:', error);
+                overlayText.textContent = 'Camera access denied or not available';
+                videoOverlay.classList.add('show');
+            }
+        }
+
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+
+            video.srcObject = null;
+            videoOverlay.classList.add('show');
+            overlayText.textContent = 'Camera stopped';
+
+            // Reset UI
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            captureBtn.disabled = true;
+
+            // Stop timers
+            if (sessionInterval) {
+                clearInterval(sessionInterval);
+                sessionInterval = null;
+            }
+
+            // Reset session
+            sessionStartTime = null;
+            focusData = [];
+            breakCount = 0;
+            updateStats();
+        }
+
+        function captureFocus() {
+            // Simulate focus capture with random data
+            const currentFocus = Math.floor(Math.random() * 100);
+            focusData.push(currentFocus);
+
+            // Update focus level
+            focusLevel.textContent = currentFocus + '%';
+            attentionBar.style.width = currentFocus + '%';
+
+            // Check for focus break (below 50%)
+            if (currentFocus < 50) {
+                breakCount++;
+                focusBreaks.textContent = breakCount;
+            }
+
+            // Update average
+            const average = Math.floor(focusData.reduce((a, b) => a + b, 0) / focusData.length);
+            avgAttention.textContent = average + '%';
+
+            // Visual feedback
+            captureBtn.textContent = 'Captured!';
+            setTimeout(() => {
+                captureBtn.textContent = 'Capture Focus';
+            }, 1000);
+        }
+
+        function startSessionTimer() {
+            sessionInterval = setInterval(() => {
+                if (sessionStartTime) {
+                    const elapsed = Date.now() - sessionStartTime;
+                    const minutes = Math.floor(elapsed / 60000);
+                    const seconds = Math.floor((elapsed % 60000) / 1000);
+                    sessionTime.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }
+            }, 1000);
+        }
+
+        function startFocusSimulation() {
+            // Simulate automatic focus detection every 3 seconds
+            setInterval(() => {
+                if (stream && !startBtn.disabled) {
+                    captureFocus();
+                }
+            }, 3000);
+        }
+
+        function updateStats() {
+            focusLevel.textContent = '0%';
+            sessionTime.textContent = '00:00';
+            avgAttention.textContent = '0%';
+            focusBreaks.textContent = '0';
+            attentionBar.style.width = '0%';
+        }
+
+        // Handle page visibility change
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden && stream) {
+                // Pause when tab is not visible
+                overlayText.textContent = 'Tab not active - Focus tracking paused';
+                videoOverlay.classList.add('show');
+            } else if (!document.hidden && stream) {
+                // Resume when tab becomes visible
+                videoOverlay.classList.remove('show');
+            }
+        });
+    </script>
+</body>
+</html>

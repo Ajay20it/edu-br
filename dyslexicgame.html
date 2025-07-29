@@ -1,0 +1,2013 @@
+<!DOCTYPE html>
+<!-- saved from url=(0034)http://localhost:5000/camgame.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edu-Bridge - Smart Learning with Attention Detection</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Floating particles background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 2px, transparent 2px),
+                radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 2px, transparent 2px),
+                radial-gradient(circle at 40% 40%, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 100px 100px, 150px 150px, 80px 80px;
+            animation: floatParticles 20s linear infinite;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        @keyframes floatParticles {
+            0% { transform: translateY(0px) rotate(0deg); }
+            100% { transform: translateY(-100px) rotate(360deg); }
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-container {
+            display: flex;
+            gap: 30px;
+            max-width: 1400px;
+            width: 100%;
+            align-items: flex-start;
+        }
+
+        .video-section {
+            flex: 2;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 25px;
+            box-shadow:
+                0 25px 50px rgba(0,0,0,0.15),
+                0 0 0 1px rgba(255,255,255,0.2),
+                inset 0 1px 0 rgba(255,255,255,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .video-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+            border-radius: 25px 25px 0 0;
+        }
+
+        .camera-section {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 25px;
+            box-shadow:
+                0 25px 50px rgba(0,0,0,0.15),
+                0 0 0 1px rgba(255,255,255,0.2),
+                inset 0 1px 0 rgba(255,255,255,0.3);
+            position: sticky;
+            top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .camera-section:hover {
+            transform: translateY(-5px);
+            box-shadow:
+                0 35px 70px rgba(0,0,0,0.2),
+                0 0 0 1px rgba(255,255,255,0.3),
+                inset 0 1px 0 rgba(255,255,255,0.4);
+        }
+
+        #eduVideo {
+            width: 100%;
+            height: auto;
+            border-radius: 20px;
+            box-shadow:
+                0 15px 35px rgba(0,0,0,0.2),
+                0 5px 15px rgba(102, 126, 234, 0.1);
+            transition: all 0.3s ease;
+            background: #000;
+        }
+
+        #eduVideo:hover {
+            transform: scale(1.02);
+            box-shadow:
+                0 25px 50px rgba(0,0,0,0.25),
+                0 10px 25px rgba(102, 126, 234, 0.2);
+        }
+
+        .video-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .video-description {
+            font-size: 1rem;
+            color: #666;
+            text-align: center;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .camera-container {
+            position: relative;
+            text-align: center;
+        }
+
+        .camera-title {
+            font-size: 1.3rem;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .camera-icon {
+            width: 24px;
+            height: 24px;
+            background: #667eea;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+        }
+
+        #cameraVideo {
+            width: 100%;
+            max-width: 300px;
+            height: 200px;
+            border-radius: 15px;
+            border: 3px solid #667eea;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+            object-fit: cover;
+            background: #f0f0f0;
+        }
+
+        .camera-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 95%;
+            height: 90%;
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(102, 126, 234, 0.05);
+            pointer-events: none;
+        }
+
+        .face-indicator {
+            width: 120px;
+            height: 120px;
+            border: 4px solid #4CAF50;
+            border-radius: 50%;
+            position: relative;
+            animation: pulse 2s infinite;
+            background: rgba(76, 175, 80, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+        }
+
+        .face-indicator::after {
+            content: '👤';
+            font-size: 3rem;
+            opacity: 0.7;
+        }
+
+        .face-indicator.not-detected {
+            border-color: #f44336;
+            background: rgba(244, 67, 54, 0.1);
+            animation: shake 0.5s infinite;
+        }
+
+        .face-indicator.not-detected::after {
+            content: '❌';
+            font-size: 2.5rem;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .status-panel {
+            margin-top: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 15px;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .status-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .status-section:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .status-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .status-section-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+
+        .status-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .status-label {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .status-value {
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+
+        .status-good {
+            background: linear-gradient(135deg, #e8f5e8, #c8e6c9);
+            color: #2e7d32;
+            border: 1px solid #4caf50;
+        }
+
+        .status-excellent {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            color: #1565c0;
+            border: 1px solid #2196f3;
+            animation: pulse-excellent 2s infinite;
+        }
+
+        @keyframes pulse-excellent {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .status-warning {
+            background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+            color: #f57c00;
+            border: 1px solid #ff9800;
+        }
+
+        .status-danger {
+            background: linear-gradient(135deg, #ffebee, #ffcdd2);
+            color: #c62828;
+            border: 1px solid #f44336;
+            animation: pulse-danger 1s infinite;
+        }
+
+        @keyframes pulse-danger {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        /* Alert Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.8rem;
+        }
+
+        .modal p {
+            color: #666;
+            margin-bottom: 25px;
+            line-height: 1.6;
+            font-size: 1.1rem;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .warning-count {
+            background: #ff9800;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .video-progress-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .video-progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .video-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .video-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        #videoStatus {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        /* Enhanced camera styling */
+        #cameraVideo {
+            width: 100%;
+            max-width: 320px;
+            height: 220px;
+            border-radius: 20px;
+            border: 4px solid transparent;
+            background: linear-gradient(white, white) padding-box,
+                        linear-gradient(135deg, #667eea, #764ba2, #f093fb) border-box;
+            box-shadow:
+                0 15px 35px rgba(102, 126, 234, 0.3),
+                0 5px 15px rgba(0, 0, 0, 0.1);
+            object-fit: cover;
+            transition: all 0.3s ease;
+        }
+
+        #cameraVideo:hover {
+            transform: scale(1.05);
+            box-shadow:
+                0 25px 50px rgba(102, 126, 234, 0.4),
+                0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Analytics Dashboard Styles */
+        .analytics-dashboard {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(248, 249, 250, 0.9));
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(102, 126, 234, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .dashboard-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .analytics-card {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid rgba(102, 126, 234, 0.1);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .analytics-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+        }
+
+        .analytics-icon {
+            font-size: 1.5rem;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .analytics-content {
+            flex: 1;
+        }
+
+        .analytics-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #333;
+            line-height: 1.2;
+        }
+
+        .analytics-label {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 2px;
+        }
+
+        .attention-heatmap {
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid rgba(102, 126, 234, 0.1);
+        }
+
+        .heatmap-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .heatmap-container {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: center;
+        }
+
+        #attentionHeatmap {
+            border-radius: 6px;
+            background: white;
+        }
+
+        .heatmap-legend {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .camera-section {
+                position: static;
+            }
+
+            #cameraVideo {
+                max-width: 280px;
+                height: 180px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="navigation">
+        <a href="index.html" class="nav-btn">← Back to Home</a>
+    </div>
+
+    <div class="header">
+        <h1>🎓 Edu-Bridge Smart Learning</h1>
+        <p>AI-Powered Attention Detection for Enhanced Learning Experience</p>
+    </div>
+
+    <div class="main-container">
+        <div class="video-section">
+            <div class="video-title">🧠 Introduction to Machine Learning</div>
+            <div class="video-description">
+                Discover the fundamentals of artificial intelligence and machine learning in this comprehensive educational video.
+                Learn about neural networks, data processing, and real-world applications.
+            </div>
+            <video id="eduVideo" controls="" preload="metadata" poster="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjQ1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZ3JhZGllbnQiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojNjY3ZWVhO3N0b3Atb3BhY2l0eToxIiAvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiM3NjRiYTI7c3RvcC1vcGFjaXR5OjEiIC8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyYWRpZW50KSIvPgogIDx0ZXh0IHg9IjUwJSIgeT0iNDAlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMzYiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj7wn6eg8J+SoSBNYWNoaW5lIExlYXJuaW5nPC90ZXh0PgogIDx0ZXh0IHg9IjUwJSIgeT0iNjAlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjAiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBvcGFjaXR5PSIwLjkiPkVkdWNhdGlvbmFsIFZpZGVvPC90ZXh0Pgo8L3N2Zz4K">
+                <!-- Primary educational video - Big Buck Bunny (Creative Commons) -->
+                <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
+                <!-- Fallback 1 - Elephant's Dream (Creative Commons) -->
+                <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4" type="video/mp4">
+                <!-- Fallback 2 - For Bigger Blazes -->
+                <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" type="video/mp4">
+                <!-- Fallback 3 - Sintel (Creative Commons) -->
+                <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+
+            <!-- Video progress indicator -->
+            <div class="video-progress-container" style="margin-top: 15px;">
+                <div class="video-progress-bar">
+                    <div id="videoProgress" class="video-progress-fill"></div>
+                </div>
+                <div class="video-stats">
+                    <span id="videoTime">0:00 / 0:00</span>
+                    <span id="videoStatus">Ready to learn</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="camera-section">
+            <div class="camera-container">
+                <div class="camera-title">
+                    <div class="camera-icon">📹</div>
+                    Attention Monitor
+                </div>
+
+                <div style="position: relative;">
+                    <video id="cameraVideo" autoplay="" muted="" playsinline=""></video>
+                    <canvas id="cameraCanvas" style="display: none;"></canvas>
+                    <div class="camera-overlay">
+                        <div id="faceIndicator" class="face-indicator not-detected"></div>
+                    </div>
+                </div>
+
+                <div class="status-panel">
+                    <div class="status-section">
+                        <h4 class="status-section-title">🎥 Camera System</h4>
+                        <div class="status-item">
+                            <span class="status-label">Camera Status:</span>
+                            <span id="cameraStatus" class="status-value status-warning">Initializing...</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Face Detection:</span>
+                            <span id="faceStatus" class="status-value status-danger">Not Detected</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Eye Tracking:</span>
+                            <span id="eyeStatus" class="status-value status-danger">Not Active</span>
+                        </div>
+                    </div>
+
+                    <div class="status-section">
+                        <h4 class="status-section-title">🧠 AI Analysis</h4>
+                        <div class="status-item">
+                            <span class="status-label">Attention Level:</span>
+                            <span id="attentionLevel" class="status-value status-good">Ready to Learn</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Gaze Focus:</span>
+                            <span id="gazeStatus" class="status-value status-warning">Calibrating...</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Looking At:</span>
+                            <span id="lookingAtStatus" class="status-value status-good">Video</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Engagement:</span>
+                            <span id="engagementStatus" class="status-value status-good">100%</span>
+                        </div>
+                    </div>
+
+                    <div class="status-section">
+                        <h4 class="status-section-title">⚠️ Learning Alerts</h4>
+                        <div class="status-item">
+                            <span class="status-label">Warnings:</span>
+                            <span id="warningCount" class="status-value status-good">0/3</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Focus Score:</span>
+                            <span id="focusScore" class="status-value status-excellent">100%</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Performance:</span>
+                            <span id="performanceStatus" class="status-value status-good">Optimal</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="controls">
+                    <button id="toggleCamera" class="btn btn-primary">🎥 Start Camera</button>
+                    <button id="resetWarnings" class="btn btn-secondary">🔄 Reset</button>
+                </div>
+
+                <!-- Advanced Analytics Dashboard -->
+                <div class="analytics-dashboard" style="margin-top: 25px;">
+                    <h4 class="dashboard-title">📊 Learning Analytics</h4>
+
+                    <div class="analytics-grid">
+                        <div class="analytics-card">
+                            <div class="analytics-icon">👁️</div>
+                            <div class="analytics-content">
+                                <div class="analytics-value" id="gazeAccuracy">--</div>
+                                <div class="analytics-label">Gaze Accuracy</div>
+                            </div>
+                        </div>
+
+                        <div class="analytics-card">
+                            <div class="analytics-icon">⚡</div>
+                            <div class="analytics-content">
+                                <div class="analytics-value" id="processingSpeed">--</div>
+                                <div class="analytics-label">Processing FPS</div>
+                            </div>
+                        </div>
+
+                        <div class="analytics-card">
+                            <div class="analytics-icon">🎯</div>
+                            <div class="analytics-content">
+                                <div class="analytics-value" id="focusTime">--</div>
+                                <div class="analytics-label">Focus Time</div>
+                            </div>
+                        </div>
+
+                        <div class="analytics-card">
+                            <div class="analytics-icon">🧠</div>
+                            <div class="analytics-content">
+                                <div class="analytics-value" id="cognitiveLoad">--</div>
+                                <div class="analytics-label">Cognitive Load</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Real-time Attention Heatmap -->
+                    <div class="attention-heatmap" style="margin-top: 20px;">
+                        <h5 class="heatmap-title">🔥 Attention Heatmap (Last 60s)</h5>
+                        <div class="heatmap-container">
+                            <canvas id="attentionHeatmap" width="300" height="60"></canvas>
+                        </div>
+                        <div class="heatmap-legend">
+                            <span class="legend-item"><span class="legend-color" style="background: #ff4444;"></span>Low</span>
+                            <span class="legend-item"><span class="legend-color" style="background: #ffaa00;"></span>Medium</span>
+                            <span class="legend-item"><span class="legend-color" style="background: #44ff44;"></span>High</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Modal -->
+    <div id="alertModal" class="modal-overlay">
+        <div class="modal">
+            <h2>🎮 Distraction Detected!</h2>
+            <p id="alertMessage">You seem to be losing focus. Would you like to try our personalized gaming learning method for better engagement?</p>
+            <div class="modal-buttons">
+                <button id="tryGameBtn" class="btn btn-primary">🎯 Try Gaming Method</button>
+                <button id="continueVideoBtn" class="btn btn-secondary">📺 Continue Video</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Real-time Gaze Cursor -->
+    <div id="gazeCursor" class="gaze-cursor">
+        <div class="gaze-dot"></div>
+        <div class="gaze-ring"></div>
+    </div>
+
+    <!-- Gaze Calibration Overlay -->
+    <div id="calibrationOverlay" class="calibration-overlay" style="display: none;">
+        <div class="calibration-content">
+            <h2>🎯 Gaze Calibration</h2>
+            <p>Look at the red dot and press SPACE when ready</p>
+            <div id="calibrationDot" class="calibration-dot"></div>
+            <div class="calibration-progress">
+                <span id="calibrationStep">Step 1 of 5</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Face-api.js for accurate face detection -->
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+
+    <script>
+        // Enhanced JavaScript Focus Detection System with Real Face Detection
+        class JavaScriptFocusDetectionSystem {
+            constructor() {
+                this.video = document.getElementById('cameraVideo');
+                this.canvas = document.getElementById('cameraCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.isTracking = false;
+                this.warningCount = 0;
+                this.maxWarnings = 3;
+                this.isAlertShowing = false;
+                this.stream = null;
+                this.animationFrame = null;
+                this.modelsLoaded = false;
+
+                // Analytics data
+                this.analytics = {
+                    fps: 0,
+                    engagement: 100,
+                    focus_score: 100,
+                    avg_attention: 100,
+                    cognitive_load: 'Low',
+                    warning_count: 0
+                };
+
+                // Face detection variables
+                this.lastFaceTime = Date.now();
+                this.focusLostTime = null;
+                this.alertThreshold = 3000; // 3 seconds
+                this.sessionStartTime = Date.now();
+                this.totalFocusTime = 0;
+                this.frameCount = 0;
+                this.fpsStartTime = Date.now();
+
+                // Face detection history for stability
+                this.faceHistory = [];
+                this.attentionHistory = [];
+                this.maxHistoryLength = 10;
+
+                // Calibration data
+                this.isCalibrated = false;
+                this.baselineFaceSize = null;
+                this.optimalDistance = null;
+
+                this.initializeSystem();
+            }
+
+            async initializeSystem() {
+                try {
+                    this.updateStatus('cameraStatus', 'Loading Models...', 'status-warning');
+
+                    // Load face-api.js models
+                    await this.loadFaceDetectionModels();
+
+                    this.setupEventListeners();
+                    this.updateUI();
+                    console.log('Enhanced JavaScript focus detection system initialized');
+                    this.updateStatus('cameraStatus', 'Ready', 'status-good');
+                } catch (error) {
+                    console.error('Failed to initialize focus detection system:', error);
+                    this.updateStatus('cameraStatus', 'Error', 'status-danger');
+                }
+            }
+
+            async loadFaceDetectionModels() {
+                try {
+                    // Load face detection models from CDN
+                    const MODEL_URL = 'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights';
+
+                    await Promise.all([
+                        faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+                        faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+                        faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL)
+                    ]);
+
+                    this.modelsLoaded = true;
+                    console.log('Face detection models loaded successfully');
+                } catch (error) {
+                    console.warn('Failed to load face detection models, using fallback detection:', error);
+                    this.modelsLoaded = false;
+                }
+            }
+
+            setupEventListeners() {
+                // Camera toggle button
+                const toggleButton = document.getElementById('toggleCamera');
+                if (toggleButton) {
+                    toggleButton.addEventListener('click', () => {
+                        if (this.isTracking) {
+                            this.stopTracking();
+                        } else {
+                            this.startTracking();
+                        }
+                    });
+                }
+
+                // Reset warnings button
+                const resetButton = document.getElementById('resetWarnings');
+                if (resetButton) {
+                    resetButton.addEventListener('click', () => {
+                        this.resetWarnings();
+                    });
+                }
+
+                // Modal buttons
+                const tryGameBtn = document.getElementById('tryGameBtn');
+                if (tryGameBtn) {
+                    tryGameBtn.addEventListener('click', () => {
+                        window.location.href = 'dyslexic.html';
+                    });
+                }
+
+                const continueVideoBtn = document.getElementById('continueVideoBtn');
+                if (continueVideoBtn) {
+                    continueVideoBtn.addEventListener('click', () => {
+                        this.hideAlert();
+                    });
+                }
+
+                // Page visibility change detection
+                document.addEventListener('visibilitychange', () => {
+                    if (document.hidden) {
+                        this.handlePageHidden();
+                    } else {
+                        this.handlePageVisible();
+                    }
+                });
+
+                // Window focus/blur events
+                window.addEventListener('blur', () => {
+                    this.handlePageHidden();
+                });
+
+                window.addEventListener('focus', () => {
+                    this.handlePageVisible();
+                });
+            }
+
+            async startTracking() {
+                try {
+                    // Request camera access with higher quality
+                    this.stream = await navigator.mediaDevices.getUserMedia({
+                        video: {
+                            width: { ideal: 640, min: 480 },
+                            height: { ideal: 480, min: 360 },
+                            facingMode: 'user',
+                            frameRate: { ideal: 30, min: 15 }
+                        }
+                    });
+
+                    this.video.srcObject = this.stream;
+
+                    // Wait for video to be ready
+                    await new Promise((resolve) => {
+                        this.video.onloadedmetadata = () => {
+                            this.video.play();
+                            resolve();
+                        };
+                    });
+
+                    // Set up canvas dimensions to match video
+                    this.canvas.width = this.video.videoWidth || 640;
+                    this.canvas.height = this.video.videoHeight || 480;
+
+                    this.isTracking = true;
+                    this.sessionStartTime = Date.now();
+                    this.lastFaceTime = Date.now();
+                    this.faceHistory = [];
+                    this.attentionHistory = [];
+
+                    // Update button
+                    const toggleButton = document.getElementById('toggleCamera');
+                    if (toggleButton) {
+                        toggleButton.textContent = '⏸️ Stop Camera';
+                        toggleButton.classList.remove('btn-primary');
+                        toggleButton.classList.add('btn-secondary');
+                    }
+
+                    this.updateStatus('cameraStatus', 'Active', 'status-excellent');
+                    this.updateStatus('faceStatus', 'Detecting...', 'status-warning');
+                    this.updateStatus('eyeStatus', 'Monitoring...', 'status-warning');
+
+                    // Start calibration process
+                    this.startCalibration();
+
+                    // Start processing frames
+                    this.processFrames();
+
+                    console.log('Enhanced camera tracking started');
+                } catch (error) {
+                    console.error('Error starting camera:', error);
+                    this.updateStatus('cameraStatus', 'Access Denied', 'status-danger');
+                }
+            }
+
+            async stopTracking() {
+                try {
+                    this.isTracking = false;
+
+                    // Stop video stream
+                    if (this.stream) {
+                        this.stream.getTracks().forEach(track => track.stop());
+                        this.stream = null;
+                    }
+
+                    // Stop animation frame
+                    if (this.animationFrame) {
+                        cancelAnimationFrame(this.animationFrame);
+                        this.animationFrame = null;
+                    }
+
+                    // Clear video
+                    this.video.srcObject = null;
+
+                    // Update button
+                    const toggleButton = document.getElementById('toggleCamera');
+                    if (toggleButton) {
+                        toggleButton.textContent = '🎥 Start Camera';
+                        toggleButton.classList.remove('btn-secondary');
+                        toggleButton.classList.add('btn-primary');
+                    }
+
+                    this.updateStatus('cameraStatus', 'Stopped', 'status-warning');
+                    this.updateStatus('faceStatus', 'Not Active', 'status-warning');
+                    this.updateStatus('eyeStatus', 'Not Active', 'status-warning');
+
+                    console.log('JavaScript camera tracking stopped');
+                } catch (error) {
+                    console.error('Error stopping camera:', error);
+                    this.updateStatus('cameraStatus', 'Stop Failed', 'status-danger');
+                }
+            }
+
+            startCalibration() {
+                // Start calibration process
+                this.updateStatus('faceStatus', 'Calibrating...', 'status-warning');
+                console.log('Starting calibration - please look directly at the camera');
+
+                setTimeout(() => {
+                    this.isCalibrated = true;
+                    console.log('Calibration complete');
+                }, 3000);
+            }
+
+            async processFrames() {
+                if (!this.isTracking) return;
+
+                const currentTime = Date.now();
+                this.frameCount++;
+
+                // Calculate FPS
+                if (currentTime - this.fpsStartTime >= 1000) {
+                    this.analytics.fps = this.frameCount;
+                    this.frameCount = 0;
+                    this.fpsStartTime = currentTime;
+                }
+
+                try {
+                    // Draw current video frame to canvas
+                    this.ctx.drawImage(this.video, 0, 0, this.canvas.width, this.canvas.height);
+
+                    let faceDetected = false;
+                    let attentionScore = 0;
+                    let faceData = null;
+
+                    if (this.modelsLoaded) {
+                        // Use face-api.js for real face detection
+                        const detections = await faceapi
+                            .detectAllFaces(this.canvas, new faceapi.TinyFaceDetectorOptions())
+                            .withFaceLandmarks()
+                            .withFaceExpressions();
+
+                        if (detections && detections.length > 0) {
+                            faceDetected = true;
+                            faceData = detections[0];
+
+                            // Calculate attention score based on multiple factors
+                            attentionScore = this.calculateAttentionScore(faceData);
+
+                            // Draw face detection overlay
+                            this.drawFaceOverlay(faceData);
+                        }
+                    } else {
+                        // Fallback: Enhanced simulation based on video analysis
+                        const imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+                        const result = this.detectFaceFromImageData(imageData);
+                        faceDetected = result.detected;
+                        attentionScore = result.score;
+                    }
+
+                    // Update face history for stability
+                    this.updateFaceHistory(faceDetected, attentionScore);
+
+                    // Get stabilized results
+                    const stabilizedResults = this.getStabilizedResults();
+
+                    // Update UI based on results
+                    this.updateFaceStatus(stabilizedResults.faceDetected, stabilizedResults.attentionScore);
+
+                    // Check for focus loss
+                    if (stabilizedResults.attentionScore < 60) {
+                        if (!this.focusLostTime) {
+                            this.focusLostTime = currentTime;
+                        }
+                    } else {
+                        this.lastFaceTime = currentTime;
+                        this.focusLostTime = null;
+                    }
+
+                    if (this.focusLostTime && (currentTime - this.focusLostTime) > this.alertThreshold) {
+                        if (!this.isAlertShowing) {
+                            this.handleFocusLost();
+                        }
+                    }
+
+                    // Update analytics
+                    this.updateAnalytics(stabilizedResults.attentionScore);
+                    this.updateAnalyticsDisplay();
+
+                } catch (error) {
+                    console.error('Error processing frame:', error);
+                }
+
+                // Continue processing
+                this.animationFrame = requestAnimationFrame(() => this.processFrames());
+            }
+
+            calculateAttentionScore(faceData) {
+                let score = 0;
+
+                // Base score for face detection
+                score += 40;
+
+                // Face size analysis (optimal distance)
+                const faceBox = faceData.detection.box;
+                const faceArea = faceBox.width * faceBox.height;
+                const canvasArea = this.canvas.width * this.canvas.height;
+                const sizeRatio = faceArea / canvasArea;
+
+                // Optimal face size is between 8% and 25% of canvas
+                if (sizeRatio >= 0.08 && sizeRatio <= 0.25) {
+                    score += 30; // Good distance
+                } else if (sizeRatio >= 0.05 && sizeRatio <= 0.35) {
+                    score += 15; // Acceptable distance
+                }
+
+                // Face position analysis (should be centered)
+                const faceCenterX = faceBox.x + faceBox.width / 2;
+                const faceCenterY = faceBox.y + faceBox.height / 2;
+                const canvasCenterX = this.canvas.width / 2;
+                const canvasCenterY = this.canvas.height / 2;
+
+                const horizontalOffset = Math.abs(faceCenterX - canvasCenterX) / canvasCenterX;
+                const verticalOffset = Math.abs(faceCenterY - canvasCenterY) / canvasCenterY;
+
+                if (horizontalOffset < 0.2 && verticalOffset < 0.2) {
+                    score += 20; // Well centered
+                } else if (horizontalOffset < 0.4 && verticalOffset < 0.4) {
+                    score += 10; // Reasonably centered
+                }
+
+                // Expression analysis
+                if (faceData.expressions) {
+                    const expressions = faceData.expressions;
+                    // Positive expressions indicate engagement
+                    if (expressions.happy > 0.3 || expressions.surprised > 0.2) {
+                        score += 10;
+                    }
+                    // Negative expressions may indicate distraction
+                    if (expressions.sad > 0.4 || expressions.angry > 0.3) {
+                        score -= 10;
+                    }
+                }
+
+                return Math.max(0, Math.min(100, score));
+            }
+
+            detectFaceFromImageData(imageData) {
+                // Fallback face detection using basic image analysis
+                const data = imageData.data;
+                const width = imageData.width;
+                const height = imageData.height;
+
+                // Simple skin tone detection
+                let skinPixels = 0;
+                let totalPixels = 0;
+
+                for (let i = 0; i < data.length; i += 4) {
+                    const r = data[i];
+                    const g = data[i + 1];
+                    const b = data[i + 2];
+
+                    // Basic skin tone detection
+                    if (r > 95 && g > 40 && b > 20 &&
+                        Math.max(r, g, b) - Math.min(r, g, b) > 15 &&
+                        Math.abs(r - g) > 15 && r > g && r > b) {
+                        skinPixels++;
+                    }
+                    totalPixels++;
+                }
+
+                const skinRatio = skinPixels / (totalPixels / 4);
+                const detected = skinRatio > 0.02; // At least 2% skin pixels
+                const score = detected ? Math.min(90, skinRatio * 1000) : Math.random() * 20;
+
+                return { detected, score };
+            }
+
+            drawFaceOverlay(faceData) {
+                const box = faceData.detection.box;
+
+                // Draw face bounding box
+                this.ctx.strokeStyle = '#00ff00';
+                this.ctx.lineWidth = 2;
+                this.ctx.strokeRect(box.x, box.y, box.width, box.height);
+
+                // Draw landmarks if available
+                if (faceData.landmarks) {
+                    this.ctx.fillStyle = '#ff0000';
+                    const landmarks = faceData.landmarks.positions;
+
+                    // Draw key facial landmarks
+                    landmarks.forEach(point => {
+                        this.ctx.beginPath();
+                        this.ctx.arc(point.x, point.y, 1, 0, 2 * Math.PI);
+                        this.ctx.fill();
+                    });
+                }
+            }
+
+            updateFaceHistory(detected, score) {
+                this.faceHistory.push({ detected, score, timestamp: Date.now() });
+
+                // Keep only recent history
+                if (this.faceHistory.length > this.maxHistoryLength) {
+                    this.faceHistory.shift();
+                }
+
+                // Update attention history
+                this.attentionHistory.push({ score, timestamp: Date.now() });
+                if (this.attentionHistory.length > 60) { // Keep 60 seconds of data
+                    this.attentionHistory.shift();
+                }
+            }
+
+            getStabilizedResults() {
+                if (this.faceHistory.length === 0) {
+                    return { faceDetected: false, attentionScore: 0 };
+                }
+
+                // Use weighted average of recent detections
+                let totalWeight = 0;
+                let weightedScore = 0;
+                let detectedCount = 0;
+
+                this.faceHistory.forEach((entry, index) => {
+                    const weight = index + 1; // More recent entries have higher weight
+                    totalWeight += weight;
+                    weightedScore += entry.score * weight;
+                    if (entry.detected) detectedCount++;
+                });
+
+                const avgScore = weightedScore / totalWeight;
+                const detectionRate = detectedCount / this.faceHistory.length;
+                const faceDetected = detectionRate > 0.5; // Face detected in majority of recent frames
+
+                return { faceDetected, attentionScore: avgScore };
+            }
+
+            updateFaceStatus(faceDetected, attentionScore) {
+                if (faceDetected) {
+                    if (attentionScore > 80) {
+                        this.updateStatus('faceStatus', 'Excellent Focus', 'status-excellent');
+                        this.updateStatus('eyeStatus', 'Highly Engaged', 'status-excellent');
+                    } else if (attentionScore > 60) {
+                        this.updateStatus('faceStatus', 'Good Focus', 'status-good');
+                        this.updateStatus('eyeStatus', 'Focused', 'status-good');
+                    } else {
+                        this.updateStatus('faceStatus', 'Detected', 'status-warning');
+                        this.updateStatus('eyeStatus', 'Distracted', 'status-warning');
+                    }
+                } else {
+                    this.updateStatus('faceStatus', 'Not Detected', 'status-danger');
+                    this.updateStatus('eyeStatus', 'Not Monitoring', 'status-danger');
+                }
+            }
+
+            updateAnalytics(attentionScore) {
+                const currentTime = Date.now();
+                const sessionDuration = (currentTime - this.sessionStartTime) / 1000;
+
+                // Calculate engagement percentage
+                this.analytics.engagement = Math.max(0, Math.min(100, attentionScore));
+                this.analytics.focus_score = Math.max(0, 100 - (this.warningCount * 25));
+                this.analytics.avg_attention = attentionScore;
+                this.analytics.warning_count = this.warningCount;
+
+                // Determine cognitive load
+                if (attentionScore > 80) {
+                    this.analytics.cognitive_load = 'Low';
+                } else if (attentionScore > 60) {
+                    this.analytics.cognitive_load = 'Medium';
+                } else {
+                    this.analytics.cognitive_load = 'High';
+                }
+            }
+
+            handleFocusLost() {
+                this.warningCount++;
+                this.isAlertShowing = true;
+                this.focusLostTime = null;
+
+                console.log(`Focus lost! Warning ${this.warningCount}/${this.maxWarnings}`);
+
+                // Update warning count display
+                this.updateWarningDisplay();
+
+                // Show alert
+                this.showAlert();
+
+                // Check if we've reached the maximum warnings
+                if (this.warningCount >= this.maxWarnings) {
+                    setTimeout(() => {
+                        alert('You have been distracted too many times. Redirecting to the main learning page...');
+                        window.location.href = 'dyslexic.html';
+                    }, 2000);
+                }
+
+                // Reset alert after 3 seconds
+                setTimeout(() => {
+                    this.isAlertShowing = false;
+                }, 3000);
+            }
+
+            handlePageHidden() {
+                // Handle page being hidden (potential distraction)
+                if (this.isTracking) {
+                    this.handleFocusLost();
+                }
+                console.log('Page hidden - potential distraction');
+            }
+
+            handlePageVisible() {
+                // Handle page being visible again
+                console.log('Page visible - focus regained');
+            }
+
+            showAlert() {
+                if (this.isAlertShowing) return;
+
+                this.isAlertShowing = true;
+                const modal = document.getElementById('alertModal');
+                const message = document.getElementById('alertMessage');
+
+                // Customize message based on warning count
+                if (this.warningCount >= this.maxWarnings) {
+                    message.textContent = `This is your final warning! You've been distracted ${this.warningCount} times. You'll be redirected to the main learning page to try a different approach.`;
+                } else {
+                    message.textContent = `Warning ${this.warningCount}/${this.maxWarnings}: AI detected you're losing focus. Please pay attention to the video or try our interactive learning method.`;
+                }
+
+                if (modal) {
+                    modal.style.display = 'flex';
+                }
+
+                // Auto-hide alert after 5 seconds if not at max warnings
+                if (this.warningCount < this.maxWarnings) {
+                    setTimeout(() => {
+                        if (this.isAlertShowing) {
+                            this.hideAlert();
+                        }
+                    }, 5000);
+                }
+            }
+
+            hideAlert() {
+                this.isAlertShowing = false;
+                const modal = document.getElementById('alertModal');
+                if (modal) {
+                    modal.style.display = 'none';
+                }
+            }
+
+            resetWarnings() {
+                this.warningCount = 0;
+                this.sessionStartTime = Date.now();
+                this.totalFocusTime = 0;
+                this.updateWarningDisplay();
+                console.log('Warnings reset');
+            }
+
+            updateWarningDisplay() {
+                this.updateStatus('warningCount', `${this.warningCount}/${this.maxWarnings}`,
+                    this.warningCount >= this.maxWarnings ? 'status-danger' :
+                    this.warningCount > 1 ? 'status-warning' : 'status-good');
+            }
+
+            updateAnalyticsDisplay() {
+                // Update processing speed with model status
+                const processingSpeedElement = document.getElementById('processingSpeed');
+                if (processingSpeedElement) {
+                    const modelStatus = this.modelsLoaded ? '🧠' : '⚡';
+                    processingSpeedElement.textContent = `${modelStatus} ${this.analytics.fps} FPS`;
+                }
+
+                // Update engagement with more detailed feedback
+                if (this.analytics.engagement !== undefined) {
+                    let engagementText = `${Math.round(this.analytics.engagement)}%`;
+                    if (this.analytics.engagement > 90) engagementText += ' 🎯';
+                    else if (this.analytics.engagement > 70) engagementText += ' 👍';
+                    else if (this.analytics.engagement < 40) engagementText += ' ⚠️';
+
+                    this.updateStatus('engagementStatus', engagementText,
+                        this.analytics.engagement > 80 ? 'status-excellent' :
+                        this.analytics.engagement > 60 ? 'status-good' : 'status-warning');
+                }
+
+                // Update focus score with trend indicator
+                if (this.analytics.focus_score !== undefined) {
+                    let focusText = `${Math.round(this.analytics.focus_score)}%`;
+                    if (this.attentionHistory.length > 5) {
+                        const recent = this.attentionHistory.slice(-5);
+                        const trend = recent[recent.length - 1].score - recent[0].score;
+                        if (trend > 5) focusText += ' ↗️';
+                        else if (trend < -5) focusText += ' ↘️';
+                        else focusText += ' ➡️';
+                    }
+
+                    this.updateStatus('focusScore', focusText,
+                        this.analytics.focus_score > 80 ? 'status-excellent' :
+                        this.analytics.focus_score > 60 ? 'status-good' : 'status-warning');
+                }
+
+                // Enhanced attention level display
+                if (this.analytics.avg_attention !== undefined) {
+                    let attentionStatus, emoji;
+                    if (this.analytics.avg_attention > 85) {
+                        attentionStatus = 'Exceptional Focus';
+                        emoji = '🌟';
+                    } else if (this.analytics.avg_attention > 70) {
+                        attentionStatus = 'Great Focus';
+                        emoji = '✨';
+                    } else if (this.analytics.avg_attention > 55) {
+                        attentionStatus = 'Good Focus';
+                        emoji = '👀';
+                    } else if (this.analytics.avg_attention > 40) {
+                        attentionStatus = 'Fair Focus';
+                        emoji = '😐';
+                    } else {
+                        attentionStatus = 'Needs Attention';
+                        emoji = '😴';
+                    }
+
+                    this.updateStatus('attentionLevel', `${emoji} ${attentionStatus}`,
+                        this.analytics.avg_attention > 80 ? 'status-excellent' :
+                        this.analytics.avg_attention > 60 ? 'status-good' : 'status-warning');
+                }
+
+                // Update cognitive load with context
+                const cognitiveLoadElement = document.getElementById('cognitiveLoad');
+                if (cognitiveLoadElement && this.analytics.cognitive_load !== undefined) {
+                    const loadEmoji = this.analytics.cognitive_load === 'Low' ? '🟢' :
+                                     this.analytics.cognitive_load === 'Medium' ? '🟡' : '🔴';
+                    cognitiveLoadElement.textContent = `${loadEmoji} ${this.analytics.cognitive_load}`;
+                }
+
+                // Enhanced gaze accuracy
+                const gazeAccuracy = Math.min(100, Math.max(0, this.analytics.avg_attention || 100));
+                const gazeElement = document.getElementById('gazeAccuracy');
+                if (gazeElement) {
+                    const accuracyEmoji = gazeAccuracy > 80 ? '🎯' : gazeAccuracy > 60 ? '👁️' : '👀';
+                    gazeElement.textContent = `${accuracyEmoji} ${gazeAccuracy.toFixed(1)}%`;
+                }
+
+                // Update focus time with session info
+                const sessionDuration = (Date.now() - this.sessionStartTime) / 1000;
+                const focusMinutes = Math.floor(sessionDuration / 60);
+                const focusSeconds = Math.floor(sessionDuration % 60);
+                const focusTimeElement = document.getElementById('focusTime');
+                if (focusTimeElement) {
+                    focusTimeElement.textContent = `⏱️ ${focusMinutes}:${focusSeconds.toString().padStart(2, '0')}`;
+                }
+
+                // Update face detection status based on attention
+                if (this.analytics.avg_attention > 60) {
+                    this.updateStatus('faceStatus', 'Detected', 'status-good');
+                    this.updateStatus('eyeStatus', 'Tracking', 'status-good');
+                    this.updateStatus('gazeStatus', 'On Screen', 'status-good');
+                    this.updateStatus('lookingAtStatus', 'Video', 'status-good');
+
+                    // Update face indicator
+                    const indicator = document.getElementById('faceIndicator');
+                    if (indicator) {
+                        indicator.className = 'face-indicator';
+                    }
+                } else {
+                    this.updateStatus('faceStatus', 'Not Detected', 'status-danger');
+                    this.updateStatus('eyeStatus', 'Lost', 'status-danger');
+                    this.updateStatus('gazeStatus', 'Off Screen', 'status-danger');
+                    this.updateStatus('lookingAtStatus', 'Away', 'status-danger');
+
+                    // Update face indicator
+                    const indicator = document.getElementById('faceIndicator');
+                    if (indicator) {
+                        indicator.className = 'face-indicator not-detected';
+                    }
+                }
+
+                // Update performance status
+                const performance = this.analytics.focus_score > 80 ? 'Excellent' :
+                                  this.analytics.focus_score > 60 ? 'Good' :
+                                  this.analytics.focus_score > 40 ? 'Fair' : 'Poor';
+                this.updateStatus('performanceStatus', performance,
+                    this.analytics.focus_score > 80 ? 'status-excellent' :
+                    this.analytics.focus_score > 60 ? 'status-good' : 'status-warning');
+
+                // Update warning count
+                this.warningCount = this.analytics.warning_count || 0;
+                this.updateWarningDisplay();
+
+                // Update attention heatmap with real data
+                this.drawAttentionHeatmap();
+            }
+
+            updateStatus(elementId, text, statusClass) {
+                const element = document.getElementById(elementId);
+                if (element) {
+                    element.textContent = text;
+                    element.className = `status-value ${statusClass}`;
+                }
+            }
+
+            updateUI() {
+                // Initialize analytics display with enhanced feedback
+                const gazeAccuracyElement = document.getElementById('gazeAccuracy');
+                const processingSpeedElement = document.getElementById('processingSpeed');
+                const focusTimeElement = document.getElementById('focusTime');
+                const cognitiveLoadElement = document.getElementById('cognitiveLoad');
+
+                if (gazeAccuracyElement) gazeAccuracyElement.textContent = '🎯 100%';
+                if (processingSpeedElement) {
+                    const modelStatus = this.modelsLoaded ? '🧠 AI' : '⚡ Basic';
+                    processingSpeedElement.textContent = `${modelStatus} 0 FPS`;
+                }
+                if (focusTimeElement) focusTimeElement.textContent = '⏱️ 0:00';
+                if (cognitiveLoadElement) cognitiveLoadElement.textContent = '🟢 Low';
+
+                // Enhanced initial status
+                this.updateStatus('cameraStatus', this.modelsLoaded ? '🧠 AI Ready' : '⚡ Basic Ready', 'status-good');
+                this.updateStatus('faceStatus', '🔍 Not Started', 'status-warning');
+                this.updateStatus('eyeStatus', '👁️ Not Started', 'status-warning');
+                this.updateStatus('attentionLevel', '🎓 Ready to Learn', 'status-good');
+                this.updateStatus('gazeStatus', '📍 Calibrating...', 'status-warning');
+                this.updateStatus('lookingAtStatus', '📺 Video', 'status-good');
+                this.updateStatus('engagementStatus', '💯 100%', 'status-excellent');
+                this.updateStatus('warningCount', '✅ 0/3', 'status-good');
+                this.updateStatus('focusScore', '🌟 100%', 'status-excellent');
+                this.updateStatus('performanceStatus', '🚀 Optimal', 'status-excellent');
+
+                // Add system info for debugging
+                console.log(`Focus Detection System Initialized:
+                    - Face Detection Models: ${this.modelsLoaded ? 'Loaded' : 'Fallback Mode'}
+                    - Camera Resolution: ${this.canvas.width}x${this.canvas.height}
+                    - Detection Method: ${this.modelsLoaded ? 'face-api.js' : 'Image Analysis'}
+                    - Alert Threshold: ${this.alertThreshold}ms
+                    - Max Warnings: ${this.maxWarnings}`);
+
+                // Draw initial attention heatmap
+                this.drawAttentionHeatmap();
+            }
+
+            drawAttentionHeatmap() {
+                const canvas = document.getElementById('attentionHeatmap');
+                if (!canvas) return;
+
+                const ctx = canvas.getContext('2d');
+
+                // Clear canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                const barWidth = canvas.width / 60; // 60 seconds
+                const currentTime = Date.now();
+
+                // Draw attention heatmap using real attention history
+                for (let i = 0; i < 60; i++) {
+                    const timeOffset = (59 - i) * 1000; // Convert to milliseconds
+                    const targetTime = currentTime - timeOffset;
+
+                    // Find the closest attention data point
+                    let attentionLevel = 0.8; // Default
+                    let closestEntry = null;
+                    let minTimeDiff = Infinity;
+
+                    this.attentionHistory.forEach(entry => {
+                        const timeDiff = Math.abs(entry.timestamp - targetTime);
+                        if (timeDiff < minTimeDiff) {
+                            minTimeDiff = timeDiff;
+                            closestEntry = entry;
+                        }
+                    });
+
+                    if (closestEntry && minTimeDiff < 2000) { // Within 2 seconds
+                        attentionLevel = closestEntry.score / 100;
+                    } else {
+                        // Use default based on current state
+                        if (this.warningCount > 0) {
+                            attentionLevel = Math.max(0.2, 0.8 - (this.warningCount * 0.15));
+                        }
+                        // Add slight variation for visual appeal
+                        attentionLevel += (Math.random() - 0.5) * 0.05;
+                    }
+
+                    attentionLevel = Math.max(0.1, Math.min(1.0, attentionLevel));
+
+                    // Enhanced color scheme with better gradients
+                    let red, green, blue;
+                    if (attentionLevel > 0.8) {
+                        // Excellent: Bright green
+                        red = Math.floor(50 * (1 - attentionLevel));
+                        green = 255;
+                        blue = Math.floor(100 * (1 - attentionLevel));
+                    } else if (attentionLevel > 0.6) {
+                        // Good: Yellow-green
+                        red = Math.floor(200 * (1 - attentionLevel));
+                        green = 255;
+                        blue = 0;
+                    } else if (attentionLevel > 0.4) {
+                        // Fair: Orange
+                        red = 255;
+                        green = Math.floor(200 * attentionLevel);
+                        blue = 0;
+                    } else {
+                        // Poor: Red
+                        red = 255;
+                        green = Math.floor(100 * attentionLevel);
+                        blue = Math.floor(50 * attentionLevel);
+                    }
+
+                    // Add gradient effect
+                    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                    gradient.addColorStop(0, `rgba(${red}, ${green}, ${blue}, 0.9)`);
+                    gradient.addColorStop(1, `rgba(${red}, ${green}, ${blue}, 0.6)`);
+
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(i * barWidth, canvas.height * (1 - attentionLevel),
+                               barWidth - 1, canvas.height * attentionLevel);
+
+                    // Add border for better definition
+                    ctx.strokeStyle = `rgba(${red * 0.8}, ${green * 0.8}, ${blue * 0.8}, 0.8)`;
+                    ctx.lineWidth = 0.5;
+                    ctx.strokeRect(i * barWidth, canvas.height * (1 - attentionLevel),
+                                 barWidth - 1, canvas.height * attentionLevel);
+                }
+
+                // Add time labels
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                ctx.font = '10px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('60s ago', barWidth * 5, canvas.height - 5);
+                ctx.fillText('30s ago', barWidth * 30, canvas.height - 5);
+                ctx.fillText('now', barWidth * 55, canvas.height - 5);
+            }
+        }
+
+        // Initialize the JavaScript focus detection system when the page loads
+        let focusSystem = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            focusSystem = new JavaScriptFocusDetectionSystem();
+
+            // Update heatmap every 5 seconds
+            setInterval(() => {
+                if (focusSystem) {
+                    focusSystem.drawAttentionHeatmap();
+                }
+            }, 5000);
+        });
+
+        // Handle page unload
+        window.addEventListener('beforeunload', () => {
+            if (focusSystem && focusSystem.stream) {
+                focusSystem.stopTracking();
+            }
+        });
+    </script>
+
+    <style>
+        /* Real-time Gaze Cursor */
+        .gaze-cursor {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            display: none;
+        }
+
+        .gaze-dot {
+            width: 8px;
+            height: 8px;
+            background: #ff4444;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 10px rgba(255, 68, 68, 0.6);
+        }
+
+        .gaze-ring {
+            width: 24px;
+            height: 24px;
+            border: 2px solid rgba(255, 68, 68, 0.4);
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation: gazeRingPulse 2s infinite;
+        }
+
+        @keyframes gazeRingPulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.4; }
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.8; }
+        }
+
+        /* Calibration Overlay */
+        .calibration-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .calibration-content {
+            text-align: center;
+            color: white;
+        }
+
+        .calibration-content h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+
+        .calibration-content p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+        }
+
+        .calibration-dot {
+            width: 20px;
+            height: 20px;
+            background: #ff4444;
+            border-radius: 50%;
+            position: fixed;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 20px rgba(255, 68, 68, 0.8);
+            animation: calibrationPulse 1s infinite;
+        }
+
+        @keyframes calibrationPulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.3); }
+        }
+
+        .calibration-progress {
+            margin-top: 30px;
+            font-size: 1.1rem;
+            color: #ccc;
+        }
+
+        /* Enhanced status indicators */
+        .status-studying {
+            background: linear-gradient(135deg, #4CAF50, #8BC34A);
+            color: white;
+            animation: studyingGlow 2s infinite;
+        }
+
+        .status-distracted {
+            background: linear-gradient(135deg, #f44336, #FF5722);
+            color: white;
+            animation: distractedPulse 1s infinite;
+        }
+
+        @keyframes studyingGlow {
+            0%, 100% { box-shadow: 0 0 10px rgba(76, 175, 80, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(76, 175, 80, 0.8); }
+        }
+
+        @keyframes distractedPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* Adaptive Sensitivity Control */
+        .sensitivity-control {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(248, 249, 250, 0.9));
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(102, 126, 234, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .control-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .sensitivity-options {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .sensitivity-option {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px 10px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 12px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .sensitivity-option:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .sensitivity-option input[type="radio"] {
+            display: none;
+        }
+
+        .sensitivity-option input[type="radio"]:checked + .option-label {
+            color: #667eea;
+            font-weight: 700;
+        }
+
+        .sensitivity-option input[type="radio"]:checked ~ * {
+            color: #667eea;
+        }
+
+        .sensitivity-option:has(input[type="radio"]:checked) {
+            border-color: #667eea;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+        }
+
+        .option-label {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .sensitivity-option small {
+            font-size: 0.8rem;
+            color: #666;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .adaptation-info {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .info-label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .progress-bar {
+            width: 120px;
+            height: 8px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .pattern-badge {
+            padding: 5px 12px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+    </style>
+
+
+</body></html>
